@@ -1,6 +1,201 @@
 Latitude,Longitude,Address,Weekly Temperature
-12.9716,77.5946,"St. Joseph's Indian High School, Vittal Mallya Road, D'Souza Layout, Richmond Town, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560001, India",
-12.962658715316355,77.60295383796725,"33/1, Norris Road, Langford Town, Richmond Town, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560025, India",
-12.973094183445017,77.5771787213954,"Balepet, Chikkapete, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560053, India",
-12.984386482096275,77.61159290708582,"Sivanchetti Gardens, Shivajinagar, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560001, India",
-12.947713920422334,77.59030585186123,"Lalbagh Botanical Gardens, Krumbiegal Road, Kankanpalya, Mavalli, Shanti Nagar, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560004, India",
+12.9716,77.5946,"St. Joseph's Indian High School, Vittal Mallya Road, D'Souza Layout, Richmond Town, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560001, India",25.3
+12.830193899198623,77.72661619196448,"Muttanalluru, Anekal, Bengaluru Urban, Karnataka, 560099, India",25.6
+12.995088452605726,77.31912112657756,"ಮುಮ್ಮೇನಹಳ್ಳಿ, Motaganahalli, Magadi taluku, Ramanagara, Karnataka, 562120, India",23.4
+13.173639843733003,77.86348589986794,"Channigalapura, Bhavapura, Hosakote taluk, Bengaluru Rural, Karnataka, 562122, India",25.3
+12.593914645472369,77.5267983994713,"Devarahalli, Harohalli taluk, Ramanagara, Karnataka, 562121, India",23.0
+13.33310293284718,77.35935350145041,"Kadatippuru, Doddaballapura taluk, Bengaluru Rural, Karnataka, 561204, India",23.1
+12.84962598899187,78.0569777689576,"Kotigutlahalli, Shoolagiri, Krishnagiri, Tamil Nadu, 635105, India",22.9
+12.736942213333949,77.13618176309892,"Kelagere, Channapattana taluk, Ramanagara, Karnataka, 562108, India",23.5
+13.481159799432827,77.78413144924464,"Rayappanahalli, Dibburu, Chikkaballapura taluk, Chikkaballapura, Karnataka, 562101, India",22.5
+12.440035965482956,77.81859603373351,"Denkanikottai, Krishnagiri, Tamil Nadu, India",19.9
+13.227249630089945,77.0336671122433,"ಗೊಲ್ಲರಹಳ್ಳಿ, Nagenahalli, Tumkur taluk, Tumakuru, Karnataka, 572118, India",23.9
+13.162096106057255,78.21352311016554,"Karahalli, Iragasandra, Kolar taluk, Kolar, Karnataka, 563103, India",23.5
+12.396124812460657,77.25671709340322,"Basavanahalli, Malavalli taluk, Mandya, Karnataka, India",23.4
+13.646508351784874,77.44160079067692,"Kundihalli, Gauribidanuru taluk, Chikkaballapura, Karnataka, 561210, India",24.9
+12.559395019441737,78.19288765014443,"Krishnagiri, Tamil Nadu, 635002, India",24.3
+12.873586012032874,76.84412981708854,"Haradanahalli, Nagamangala taluk, Mandya, Karnataka, India",24.0
+13.558644778123524,78.09850748725624,"Brahmanahalli, Chintamani taluk, Chikkaballapura, Karnataka, 563125, India",24.8
+12.181726621926316,77.62965511075535,"Hanur taluk, Chamarajanagar, Karnataka, India",23.3
+13.54616109912343,77.00667444577132,"Saluparahalli, Sira taluk, Tumakuru, Karnataka, India",24.2
+12.933751129462928,78.44590791743995,"Burugamakanapalli, Yellagarani, Ramakuppam, Chittoor, Andhra Pradesh, India",24.1
+12.419533216476307,76.92623410887283,"Chikkamulagudu, Malavalli taluk, Mandya, Karnataka, 571424, India",23.1
+13.842728760920082,77.71196616601684,"Chilamatturu Lepakshi Hindupur Road, Maruvakottapalli, Chilamathur, Sri Sathya Sai, Andhra Pradesh, 515341, India",25.1
+12.23432958075854,78.11909061827255,"Palakkodu, Dharmapuri, Tamil Nadu, India",23.0
+13.16901584493279,76.67842395274374,"Turuvekere, Turuvekere taluk, Tumakuru, Karnataka, 572227, India",24.0
+13.439937831057946,78.42569023837649,"MDR, Piguvapalle, Ajjamreddipalle, Ramasamudram, Annamayya, Andhra Pradesh, India",23.6
+12.057037193473214,77.30167738157328,"Mahalinganakatte, Hanur taluk, Chamarajanagar, Karnataka, India",22.0
+13.85734390036454,77.17173931503177,"Gollarahatti, Madhugiri taluk, Tumakuru, Karnataka, 572133, India",23.7
+12.588632145130408,78.53179274144769,"Tirupathur, Tirupattur, Tamil Nadu, 635852, India",26.3
+12.622771216575488,76.62374440090495,"Hosahalli, Pandavapura taluk, Mandya, Karnataka, 571101, India",22.4
+13.887026663784216,78.08260142154623,"Dodemvaripalle, Maddemmagudipalle, Amadagur, Sri Sathya Sai, Andhra Pradesh, India",26.5
+11.956953900332808,77.87067901957286,"Pennagaram, Dharmapuri, Tamil Nadu, India",24.4
+13.54356789960182,76.67434738066298,"Timmanahalli, Chikkanayakanahalli taluk, Tumakuru, Karnataka, India",24.0
+13.157662199581639,78.6846349894893,"Kolladu, Gollapalle, Palamaner, Chittoor, Andhra Pradesh, 517432, India",25.2
+12.09680751408952,76.91318571220869,"Linganapura, Chamarajanagara taluk, Chamarajanagar, Karnataka, 571316, India",22.7
+14.085354284559692,77.49478060460376,"Peddipalli, Roddam, Sri Sathya Sai, Andhra Pradesh, India",25.9
+12.203821942936157,78.44485597871964,"Uthangarai, Krishnagiri, Tamil Nadu, India",25.6
+12.968956323752451,76.42149629393877,"SH147, Jamburu Amanikere, Channarayapattana taluk, Hassan, Karnataka, India",23.8
+13.758047136977297,78.47425960721517,"Merikelavandlapalle, Thamballapalle, Annamayya, Andhra Pradesh, India",26.7
+11.794007541487671,77.4900320972207,"Anthiyur, Erode, Tamil Nadu, India",21.8
+13.920490515169917,76.84839642162622,"Bevinahalli, Sira taluk, Tumakuru, Karnataka, India",25.5
+12.758179438556892,78.81135511473116,"Pākkam, Vellore, Tamil Nadu, India",26.3
+12.309791515031863,76.54146747734343,"Bommanahalli, Mysuru taluk, Mysuru, Karnataka, 571130, India",23.2
+14.1716596590796,77.92417914063412,"Nallamada, Sri Sathya Sai, Andhra Pradesh, 515501, India",28.0
+11.855592181623388,78.18405541365841,"Yercaud, Salem, Tamil Nadu, 636354, India",24.5
+13.40372434766742,76.37375473094986,"Mallenahalli, Arasikere taluku, Hassan, Karnataka, 573126, India",24.3
+13.460970889732215,78.80874870913979,"Gollapalle, Varthamvaripalle, Somala, Chittoor, Andhra Pradesh, 517258, India",26.0
+11.79230961536362,77.03672703779877,"Kumtapuram, Thalavadi, Erode, Tamil Nadu, 638461, India",21.5
+14.22493504902427,77.18943837420409,"ಸಾರವಾಟಪುರ, Pavagada taluk, Tumakuru, Karnataka, 572141, India",26.4
+12.304753747448734,78.76465157260449,"Chinnasamudram, Chengam, Tiruvannamalai, Tamil Nadu, 606700, India",27.6
+12.67768199196284,76.25996081245695,"Chikkana Koppalu, Dalagodanahalli, Hole Narasipura taluk, Hassan, Karnataka, 575211, India",23.9
+14.08096595603307,78.39121493976677,"Gurikanivandlapalle, Nambulipulikunta, Sri Sathya Sai, Andhra Pradesh, India",29.7
+11.613825898539412,77.77590185454459,"Pudupatty, Sullimullur, Edappadi, Salem, Tamil Nadu, 637107, India",26.2
+13.85806458740737,76.51062190138755,"Hiriyuru taluk, Chitradurga, Karnataka, India",25.1
+13.028598898036224,79.01697430440257,"Katpadi, Vellore, Tamil Nadu, India",28.9
+11.973281921197112,76.58258678520424,"Shrikanthapura, Gundlupet taluk, Chamarajanagar, Karnataka, India",22.8
+14.392204779495476,77.65822236828896,"Regatipalle, Dharmavaram, Sri Sathya Sai, Andhra Pradesh, 515671, India",30.0
+11.870700567020997,78.53107851859944,"Pappireddipatti, Dharmapuri, Tamil Nadu, India",23.3
+13.156420448845099,76.13000048312558,"Nitturu, Hasana taluk, Hassan, Karnataka, India",22.9
+13.806246245348941,78.81851037914755,"MDR, Pendagivandlapalle, Kottakurvapalle, Kambhamvaripalle, Annamayya, Andhra Pradesh, India",28.7
+11.533391755181407,77.27133898239482,"Sathyamangalam, Erode, Tamil Nadu, 638401, India",25.0
+14.256680570856028,76.83332313807917,"Vishvanathapura, Challakere taluku, Chitradurga, Karnataka, India",27.6
+12.517232717211408,79.04837227234643,"Polur, Tiruvannamalai, Tamil Nadu, 606803, India",25.2
+12.329832188258118,76.20282870648452,"NH275, Attikuppe, Hunasuru taluk, Mysuru, Karnataka, 571248, India",22.5
+14.376921830522315,78.19195254455398,"Kottapalle, Pulivendla, YSR, Andhra Pradesh, India",33.1
+11.529517607278404,78.12661788333675,"Komarapalayam, Rasipuram, Namakkal, Tamil Nadu, 636203, India",26.0
+13.681575764794026,76.19232953840545,"Chaulahiriyuru, Ajjampura taluku, Chikkamagaluru, Karnataka, India",25.7
+13.370199900075017,79.13135886027702,"Nadimpalle, Puthalapattu, Chittoor, Andhra Pradesh, India",28.7
+11.646440172195971,76.7390870519189,"Chikka Elachatti, Gundlupet taluk, Chamarajanagar, Karnataka, 571111, India",21.5
+14.52852421552677,77.31280738883966,"Thimmasamudram, Kalyandurg, Anantapur, Andhra Pradesh, 515787, India",29.2
+11.998839593205874,78.87822484495084,"Sankarapuram, Kallakurichi, Tamil Nadu, 606402, India",29.7
+12.826696177588774,75.96592670162443,"Purabhairavanhalli Road, Hanumanahalli, Aluru taluk, Hassan, Karnataka, India",21.5
+14.160302125414125,78.71308908336565,"Rayachoti - Vempalle Road, Kommaripalle, Middekapalle, Lakkireddipalle, Annamayya, Andhra Pradesh, India",31.1
+11.344460948338314,77.5946,"Perundurai - Kavandapady Road, Perundurai, Erode, Tamil Nadu, 638052, India",25.9
+14.176891179623365,76.46038672835388,"Kyadigere, Chitradurga taluku, Chitradurga, Karnataka, 577524, India",25.4
+12.822467028221823,79.26913297216012,"Arcot, Ranipet, Tamil Nadu, 632512, India",30.0
+11.95729219933339,76.25653827444337,"Malali, Heggadadevanakote taluk, Mysuru, Karnataka, 571116, India",21.8
+14.617546015369914,77.89262317140701,"Chillavaripalle, Tadimarri, Sri Sathya Sai, Andhra Pradesh, India",32.5
+11.550879687370761,78.51141390194248,"Tamampatti-Kerrapatti-Malayampatti-Seliyampatti, Seeliampatty Pudur, Keeripatti, Attur, Salem, Tamil Nadu, 636107, India",27.3
+13.404484432511445,75.9237310321794,"Gangabasavanahalli, Pillenahalli, Kaduru taluk, Chikkamagaluru, Karnataka, 577135, India",24.5
+13.753864011315441,79.14099240916354,"Kambhamvaripalle, Kummarapalle, Yerravaripalem, Tirupati, Andhra Pradesh, 517197, India",27.6
+11.35922693501549,77.00015691405319,"lingapuram, Mettupalayam, Coimbatore, Tamil Nadu, 641301, India",26.4
+14.564960826467852,76.91671462852428,"Gollaladoddi, Chelimanahalli, Brahmasamudram, Anantapur, Andhra Pradesh, 515863, India",28.6
+12.232922354220502,79.19459186821938,"Kilpennathur, Tiruvannamalai, Tamil Nadu, India",30.3
+12.440823374253123,75.89931663637584,"NH275, 7th Hosakote, Kushalanagar taluku, Kodagu, Karnataka, India",20.0
+14.491854502346795,78.49626759517022,"Potimamidipalli, Sangalapalle, Veerapunayunipalle, YSR, Andhra Pradesh, 516321, India",34.1
+11.245281908566904,77.98219643556902,"Sengodampalayam, Ramadevam, Paramathi-Velur, Namakkal, Tamil Nadu, 637203, India",27.8
+13.987130434014915,76.10312667137465,"Rangapura, Holalkere taluk, Chitradurga, Karnataka, 577539, India",25.4
+13.198723095939696,79.40434167221633,"Malavada, Palasamudram, Chittoor, Andhra Pradesh, 631301, India",29.8
+11.591034133077331,76.42188345326814,"Gudalur, Nilgiris, Tamil Nadu, India",20.1
+14.778687993680762,77.51353121529307,"Kotanka, Garladinne, Anantapur, Andhra Pradesh, India",31.6
+11.682067575719179,78.89968058540745,"Kallakkurichi, Kallakurichi, Tamil Nadu, India",29.8
+13.044701794807047,75.73068407229668,"Nandagodanahalli, Mudigere taluk, Chikkamagaluru, Karnataka, India",21.4
+14.149650140824289,79.03820519418315,"Sreerangarajupalem, Pullampeta, Annamayya, Andhra Pradesh, India",30.8
+11.138029068605972,77.35019817793686,"Pitchampalayam, TiruppurNorth, Tiruppur, Tamil Nadu, 641603, India",26.9
+14.491997775178566,76.50040987811555,"Channabasayyanahatti, Challakere taluku, Chitradurga, Karnataka, India",26.1
+12.560511302420206,79.45210520726941,"Vandavasi, Tiruvannamalai, Tamil Nadu, India",31.0
+12.027050849205702,75.94164632059692,"Shettigeri, Ponnampete taluk, Kodagu, Karnataka, 571217, India",20.4
+14.771891544643141,78.17803734885756,"Gandluru - Kondapuram - Simhadripuram - Velidandla Road, Kondapuram, YSR, Andhra Pradesh, India",33.7
+11.249902421238119,78.407248284512,"Saetturpatti, KOLLI HILLS, Namakkal, Tamil Nadu, India",22.0
+13.695353475026783,75.79197464049,"Attiganalu, Tarikere, Tarikere taluku, Chikkamagaluru, Karnataka, 577228, India",24.8
+13.620793548983958,79.43674697064803,"Tirupati, Tirupati (Urban), Tirupati, Andhra Pradesh, 517500, India",30.2
+11.260674496016303,76.69318513537888,"Manjacombai, Kundah, Nilgiris, Tamil Nadu, 643204, India",18.4
+14.841510151204231,77.07949496241423,"MDR, Udegolam, Kanekal, Anantapur, Andhra Pradesh, India",30.5
+11.920737314915451,79.26133980366427,"Cuddalore - Chittoor Road, Thiruvennainallur, Viluppuram, Tamil Nadu, 605803, India",30.8
+12.62470016956737,75.63365975095071,"Balugodu, Puneri, Sulya taluk, Dakshina Kannada, Karnataka, 574238, India",24.8
+14.52732619792915,78.82216985340483,"Rachinnayapalle, Chennur, YSR, Andhra Pradesh, 516162, India",33.1
+11.004741750197711,77.76874327050284,"Kangeyam, Tiruppur, Tamil Nadu, India",27.8
+14.30709789238806,76.09520658842168,"Dindadahalli, Davanagere Taluku, Davanagere, Karnataka, 577534, India",24.4
+12.963669582935918,79.62644661984184,"Arakonam, Ranipet, Tamil Nadu, 631051, India",30.8
+11.61487705878103,76.0974423932402,"Woodlands Estate Private Road, Kalpetta, Vythiri, Wayanad, Kerala, 673121, India",21.1
+14.974798143399392,77.77483848025526,"Puppala, Yadiki, Anantapur, Andhra Pradesh, India",33.3
+11.365893557159234,78.84093260029884,"Thondapady, Veppanthattai, Perambalur, Tamil Nadu, 621219, India",29.2
+13.31591714933214,75.55400693474607,"Hunasehalli, Chikkamagaluru taluku, Chikkamagaluru, Karnataka, 577136, India",21.4
+14.060646995829869,79.35538425539976,"Gaddalerupalle, Obulavaripalle, Annamayya, Andhra Pradesh, India",29.8
+10.993373194977218,77.05832317046605,"Pattanam Road, Ondipudur, Sulur, Coimbatore, Tamil Nadu, 641016, India",25.6
+14.793507820109127,76.61901951503785,"Kasapura, Kudligi taluku, Vijayanagara, Karnataka, 583130, India",26.5
+12.257875100711804,79.56789919597772,"Deevanur, Tindivanam, Viluppuram, Tamil Nadu, India",31.1
+12.170696251173725,75.6468139498604,"Madikeri taluku, Kodagu, Karnataka, India",20.9
+14.857593135826008,78.49933261395135,"Parlapadu, Rajupalem, YSR, Andhra Pradesh, India",35.4
+10.975790391579064,78.23114416316739,"Seelaipillaiyarputhur - Kattuputhur - Namakkal Road, V.S.Nagar, Kattupputtur, Thottiyam, Tiruchirappalli, Tamil Nadu, 621207, India",26.4
+14.014994537422362,75.73175990332334,"Holehatti, Bhadravati taluk, Shimoga, Karnataka, 577233, India",24.0
+13.419532155475578,79.69815624207871,"Sadasivapuram, Peddapatteda, Nindra, Chittoor, Andhra Pradesh, 517591, India",30.3
+11.23377983822388,76.36408187894223,"Girijan Colony, Chokkad, Chettipadam, Nilambur, Malappuram, Kerala, India",25.1
+15.079659925771447,77.3090329758953,"Poliki, Vidapanakal, Anantapur, Andhra Pradesh, India",33.6
+11.593903769027788,79.25363294843115,"Virudhachalam, Cuddalore, Tamil Nadu, 606104, India",30.6
+12.868951630724382,75.4115818784637,"Kokkada, Kadaba taluk, Dakshina Kannada, Karnataka, 574229, India",25.1
+14.48863186958079,79.15631956457607,"Gopavaram, YSR, Andhra Pradesh, India",28.7
+10.81257273995671,77.49926708554071,"Kaathapullavampatti, Dharapuram, Tiruppur, Tamil Nadu, India",26.9
+14.629263735336862,76.16284031339357,"Ujjappa Vaderahalli, Jagaluru taluku, Davanagere, Karnataka, India",25.0
+12.678097115100774,79.79373438535349,"Nariyamputtūr, Uthiramerur, Kanchipuram, Tamil Nadu, India",30.8
+11.711374532832705,75.77734356432337,"Karingad, Vadakara, Kozhikode, Kerala, 673513, India",25.2
+15.113577371444677,78.08336060600584,"Pernikala, Kolimigundla, Nandyal, Andhra Pradesh, 518123, India",34.0
+11.0613012536002,78.7096741317894,"Nallendrapuram, Vellakkalpatti, Musiri, Tiruchirappalli, Tamil Nadu, 621007, India",27.7
+13.627493530246753,75.43835905211988,"ದ್ವಾರಮಕ್ಕಿ, Narasimharajapura taluk, Chikkamagaluru, Karnataka, 577134, India",22.7
+13.901325854522465,79.65369047154154,"Lingamanayudupalle, Panjam, Venkatagiri, Tirupati, Andhra Pradesh, India",30.9
+10.911751501529247,76.73197671914457,"Sadivayal, Coimbatore South, Coimbatore, Tamil Nadu, 641114, India",22.6
+15.071479215027248,76.8078009587095,"MDR, Hirehalu Siddapuram, D Hirehal, Anantapur, Andhra Pradesh, India",27.7
+11.927551907937762,79.61632324740742,"Madhagadipet, Kalitheerthalkuppam, Viluppuram, Tamil Nadu, 605107, India",30.2
+12.379293512675137,75.38117034749173,"LR, Konnakad, Vellarikkundu, Kasaragod, Kerala, 671534, India",24.5
+14.874982421376938,78.84310182007543,"Bengaluru - Vijayawada Expressway, Uppalapadu, Sri Avadhutha Kasinayana, YSR, Andhra Pradesh, 523112, India",32.5
+10.736795945136633,77.99296386872594,"Mettukattur, Aravakurichi, Karur, Tamil Nadu, 639203, India",26.6
+14.3508233156027,75.74212639930818,"Malebennuru, Harihara taluku, Davanagere, Karnataka, 577530, India",24.5
+13.160337254960151,79.91740001455888,"Ekkadu - Ramathandalam Road, Tiruvallur, Thiruvallur, Tamil Nadu, 602001, India",30.9
+11.276372859733035,76.02519103692119,"Kozhikode, Kerala, India",24.7
+15.27237007930379,77.5946,"Chennampalle, Tuggali, Kurnool, Andhra Pradesh, India",32.9
+11.264528223048414,79.17487795782264,"Sendurai - Anganur - Agaram Seegore - Thirumandurai Road, Udayankudikadu, Vanjinapuram, Sendurai, Ariyalur, Tamil Nadu, 621714, India",30.1
+13.16282861693541,75.23928707371623,"Kalasa taluk, Chikkamagaluru, Karnataka, India",20.1
+14.379709389501196,79.4863131732129,"Ramkuru, Rapur, Sri Potti Sriramulu Nellore, Andhra Pradesh, India",30.2
+10.673818640683413,77.18510285862881,"Kongalnagaram, Madathukulam, Tiruppur, Tamil Nadu, 642205, India",25.4
+14.94213451294447,76.30158358671366,"SH40, Hanasi, Hagari Bommanahalli taluk, Vijayanagara, Karnataka, India",25.5
+12.353672219031187,79.902033869499,"Maduranthagam - Vennangupattu Road, Vennangupattu, Cheyyur, Chengalpattu, Tamil Nadu, India",30.5
+11.875112930999858,75.47250604382963,"Kannur, Kerala, 670611, India",26.9
+15.19147665412504,78.42684142046906,"Dornipadu, Nandyal, Andhra Pradesh, 518135, India",35.6
+10.778626086770204,78.51250052653658,"Mamatchireddipatty, Alathur, Kulithalai, Karur, Tamil Nadu, India",27.0
+13.967633907358284,75.38656834874087,"Adinakottige, Doddamatli, Shivamogga taluk, Shimoga, Karnataka, India",23.0
+13.678870338061149,79.92285586391712,"Sadanavaripalem, Varadaiahpalem, Tirupati, Andhra Pradesh, India",30.6
+10.894670997915869,76.38310593981176,"Ayyapamparmbu Colony, Ottappalam, Palakkad, Kerala, 679514, India",25.6
+15.316452325074808,77.05904248143726,"Karchedu, Bellary taluk, Ballari, Karnataka, India",30.7
+11.58159614678415,79.5970642176748,"Kurinjipadi, Cuddalore, Tamil Nadu, 607302, India",30.4
+12.64463188795765,75.15342112415591,"Daithota, Putturu taluk, Dakshina Kannada, Karnataka, 671552, India",25.2
+14.824343131919614,79.19672742179556,"Marripadu, Sri Potti Sriramulu Nellore, Andhra Pradesh, India",29.8
+10.54066347998224,77.70183598657907,"Ambilikkai, Oddanchatram, Dindigul, Tamil Nadu, 624612, India",26.5
+14.690967904958958,75.82221295831859,"yarabalu, Harapanahalli taluku, Vijayanagara, Karnataka, 583213, India",24.9
+12.852907273833685,80.08730025422003,"Chengalpattu, Tamil Nadu, 603210, India",31.6
+11.386345782276473,75.68810489217238,"Chemanchery, Koyilandi, Kozhikode, Kerala, 673304, India",27.5
+15.413121302138041,77.9258446743546,"Timmapuram, Dhone, Nandyal, Andhra Pradesh, India",33.1
+10.94395119361478,79.02847377892124,"Adaikalapuram, Kovilesanai, Ariyalur, Tamil Nadu, 621851, India",29.4
+13.496041735880722,75.12254615785571,"Malanduru, Tirthahalli taluk, Shimoga, Karnataka, 577411, India",22.3
+14.204622010278856,79.80052589498118,"Ramalingapuram, Gudur, Tirupati, Andhra Pradesh, 524406, India",30.5
+10.592988435844008,76.83704747834994,"Kilavanputhur, Pollachi, Coimbatore, Tamil Nadu, 678533, India",25.1
+15.234870191550703,76.50683811001778,"Gundlavaddigeri, Hosapete taluk, Vijayanagara, Karnataka, India",26.8
+12.001590764322,79.94785423456517,"Kottakuppam, Vanur, Viluppuram, Tamil Nadu, 605104, India",30.3
+12.10059964581981,75.19317539927117,"Kotti, Payyanur, Payyannur Taluk, Kannur, Kerala, 671350, India",28.0
+15.205604072038312,78.79336210229249,"Giddalur, Prakasam, Andhra Pradesh, India",30.0
+10.527434920387073,78.25605356076807,"Sakkampatti, Ponnambalappatti, Manapparai, Tiruchirappalli, Tamil Nadu, 621315, India",25.1
+14.324931382625735,75.40089905160772,"Mattikote, Shikaripura taluk, Shimoga, Karnataka, 577427, India",23.9
+13.400629383929257,80.15351919182199,"Ayyanallur Road, Gummidipundi, Gummidipoondi, Thiruvallur, Tamil Nadu, 601200, India",30.1
+10.943029906520835,76.02315817979051,"Vettichira, Tirur, Malappuram, Kerala, 676510, India",25.7
+15.519740692481463,77.36475992103554,"Chiramandoddi, Aspari, Kurnool, Andhra Pradesh, India",33.1
+11.231527331526594,79.51049960286288,"Veeranandhapuram, Udayarpalayam, Ariyalur, Tamil Nadu, 621903, India",30.1
+12.958383657565154,74.9715342039089,"Malali, Mangaluru taluk, Dakshina Kannada, Karnataka, 574144, India",27.3
+14.706711852157179,79.54811613221591,"Zangalapalle, Atmakur, Sri Potti Sriramulu Nellore, Andhra Pradesh, India",30.8
+10.394279693782089,77.36690155731885,"Palani, Dindigul, Tamil Nadu, India",25.6
+15.024047448255574,75.97044967638837,"SH45, Huvina Hadagali, Huvina Hadagali taluk, Vijayanagara, Karnataka, 583219, India",25.1
+12.507001774267861,80.20171416439656,"Kalpakkam, Tirukalukundram, Chengalpattu, Tamil Nadu, 603102, India",30.3
+11.560944021852618,75.36383099846506,India,29.4
+15.496352833547796,78.29223257313645,"Panyam, Nandyal, Andhra Pradesh, 518112, India",33.6
+10.642819563340508,78.81845605703111,"Ramachandrapuram, Kulathur taluk, Pudukkottai, Tamil Nadu, India",29.4
+13.858271111197725,75.06625589369366,"NH766C, Guddekoppa, Hosanagara taluk, Shimoga, Karnataka, 577425, India",22.8
+13.968158749522582,80.0881497544348,"Pittavanipalle, Chittamur, Tirupati, Andhra Pradesh, India",29.7
+10.573634099415214,76.46578171498982,"Vadakkenchery, Alathur, Palakkad, Kerala, 678683, India",25.2
+15.497345270815027,76.77323773075082,"ಬೆನ್ನೂರ, Karatagi taluku, Koppal, Karnataka, India",29.8
+11.632893112535669,79.92879333062915,"South Arcot, Cuddalore, Tamil Nadu, 607804, India",29.9
+12.381742376393886,74.94884932934889,"Dakshina Kannada, Karnataka, India",29.4
+15.154166417125989,79.17111364122745,"Jinuguvaripalle, Chandra Sekhara Puram, Prakasam, Andhra Pradesh, India",31.9
+10.316404484775843,77.94748021276123,"NH44, Athoor, Dindigul, Tamil Nadu, 624303, India",26.3
+14.688156275659779,75.48259772676798,"Taredahalli, Byadagi taluk, Haveri, Karnataka, 581106, India",24.6
+13.074506982726248,80.33740692847702,"Chennai, Tamil Nadu, 600001, India",31.8
+11.05672115433281,75.66325606461407,India,29.3
+15.673645540462335,77.71631152765173,"Bidipadu, Gonegandla, Kurnool, Andhra Pradesh, India",34.2

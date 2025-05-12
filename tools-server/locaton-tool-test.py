@@ -12,8 +12,8 @@ API_KEY = os.getenv("OPENWEATHER_API_KEY")
 # Center coordinates for Bangalore
 lat_center = 12.9716
 lon_center = 77.5946
-radius_km = 3  # Max radius
-num_points = 5  # Target number of points
+radius_km = 300  # Max radius
+num_points = 200  # Target number of points
 
 # Step sizes
 distance_step = np.sqrt((radius_km**2) / num_points)  # Spacing per point (~23-24 km)
@@ -57,8 +57,9 @@ def get_weekly_avg_temp(weather_data):
     print("Calculate Weekly Average Max Temperature")
     try:
         daily_forecast = weather_data.get("daily", [])
-        if not daily_forecast:
-            return None
+        if not daily_forecast or len(daily_forecast) == 0:
+            main_content = weather_data.get("main", [])
+            return round(main_content["temp_max"] - 273.15, 1)
         max_temps_celsius = [(day["temp"]["max"] - 273.15) for day in daily_forecast]
         return sum(max_temps_celsius) / len(max_temps_celsius)
     except (KeyError, TypeError):
@@ -69,7 +70,7 @@ def get_weather_data(lat, lon):
     print("Fetch Weather Data")
     if not API_KEY:
         return {"error": "API key not found"}
-    url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly&appid={API_KEY}"
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&exclude=minutely,hourly&appid={API_KEY}"
     try:
         response = requests.get(url)
         response.raise_for_status()
