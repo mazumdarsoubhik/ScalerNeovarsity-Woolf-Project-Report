@@ -1,5 +1,0 @@
-numpy
-geopy
-pandas
-requests
-mcp
