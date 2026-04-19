@@ -31,6 +31,7 @@ class Settings:
     gemini_base_url: str = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
     mistral_api_key: str = os.getenv("MISTRAL_API_KEY", "")
     mistral_base_url: str = os.getenv("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
+    auth_token_ttl_minutes: int = int(os.getenv("AUTH_TOKEN_TTL_MINUTES", "10080"))
 
 
 settings = Settings()

@@ -16,7 +16,7 @@ class ApiError(Exception):
 @dataclass
 class BackendClient:
     base_url: str
-    user_id: str
+    access_token: str | None = None
     timeout_seconds: int = 15
 
     @property
@@ -25,7 +25,10 @@ class BackendClient:
 
     @property
     def headers(self) -> dict[str, str]:
-        return {"x-user-id": self.user_id, "Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json"}
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+        return headers
 
     def _url(self, path: str) -> str:
         clean_base = self.base_url.rstrip("/")
@@ -73,6 +76,27 @@ class BackendClient:
 
     def health(self) -> dict[str, Any]:
         return self._request("GET", "/health")
+
+    def register(self, email: str, password: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            "/auth/register",
+            json_body={"email": email, "password": password},
+            expected_statuses={201},
+        )
+
+    def login(self, email: str, password: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            "/auth/login",
+            json_body={"email": email, "password": password},
+        )
+
+    def logout(self) -> None:
+        self._request("POST", "/auth/logout", expected_statuses={204})
+
+    def me(self) -> dict[str, Any]:
+        return self._request("GET", "/auth/me")
 
     def create_meal(self, text: str, meal_type: str | None, eaten_at_iso: str | None) -> dict[str, Any]:
         body: dict[str, Any] = {"text": text}

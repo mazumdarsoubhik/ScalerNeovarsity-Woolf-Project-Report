@@ -4,7 +4,8 @@ Single-app Streamlit UI integrated with backend APIs:
 - `Today` tab for meal logging and dashboard
 - `History` tab for filtered meal history and edit/delete
 - `Chat` tab for nutrition assistant
-- `Settings` tab for backend URL + `x-user-id`
+- `Settings` tab for backend URL + logout
+- Auth screen for email/password login or registration
 
 ### Run
 
