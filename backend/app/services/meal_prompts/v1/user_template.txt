@@ -1,0 +1,2 @@
+Parse this meal text into structured JSON:
+{meal_text}

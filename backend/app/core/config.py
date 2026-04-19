@@ -32,6 +32,9 @@ class Settings:
     mistral_api_key: str = os.getenv("MISTRAL_API_KEY", "")
     mistral_base_url: str = os.getenv("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
     auth_token_ttl_minutes: int = int(os.getenv("AUTH_TOKEN_TTL_MINUTES", "10080"))
+    meal_parser_mode: str = os.getenv("MEAL_PARSER_MODE", "llm_first")
+    meal_prompt_version: str = os.getenv("MEAL_PROMPT_VERSION", "v1")
+    meal_llm_min_confidence: float = float(os.getenv("MEAL_LLM_MIN_CONFIDENCE", "0.65"))
 
 
 settings = Settings()

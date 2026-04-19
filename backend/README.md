@@ -30,3 +30,10 @@ uvicorn app.main:app --reload --port 8080
 - Register or login with `email` and `password` to get `access_token`.
 - Send token as `Authorization: Bearer <access_token>` for protected APIs.
 - Token expiry is controlled by `AUTH_TOKEN_TTL_MINUTES` (default: `10080`).
+
+## Meal Parser Mode
+
+- `MEAL_PARSER_MODE=llm_first|rule_only|llm_only` (default: `llm_first`)
+- `MEAL_PROMPT_VERSION` controls the prompt template folder in `app/services/meal_prompts/`
+- `MEAL_LLM_MIN_CONFIDENCE` controls fallback threshold in `llm_first` mode
+- Unknown foods from LLM parsing are tracked in `food_candidates` for catalog growth

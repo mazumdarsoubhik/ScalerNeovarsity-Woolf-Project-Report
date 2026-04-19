@@ -1,6 +1,7 @@
 from app.db.models.auth_token import AuthToken
 from app.db.models.chat_message import ChatMessage
 from app.db.models.daily_summary import DailySummary
+from app.db.models.food_candidate import FoodCandidate
 from app.db.models.food import Food
 from app.db.models.meal import Meal
 from app.db.models.meal_item import MealItem
@@ -12,6 +13,7 @@ __all__ = [
     "AuthToken",
     "ChatMessage",
     "DailySummary",
+    "FoodCandidate",
     "Food",
     "Meal",
     "MealItem",

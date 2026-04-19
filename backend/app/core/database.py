@@ -25,6 +25,6 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     from app.db.models.base import Base
-    from app.db.models import auth_token, chat_message, daily_summary, food, meal, meal_item, user, user_credential, user_goal  # noqa: F401
+    from app.db.models import auth_token, chat_message, daily_summary, food, food_candidate, meal, meal_item, user, user_credential, user_goal  # noqa: F401
 
     Base.metadata.create_all(bind=engine)

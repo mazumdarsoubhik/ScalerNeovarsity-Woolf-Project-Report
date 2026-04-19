@@ -184,3 +184,6 @@ tmp_*/
 
 # VS Code
 .vscode/
+
+# Database file
+backend\nutriflow.db
