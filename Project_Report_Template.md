@@ -1,11 +1,11 @@
-﻿# NutriFlow: Intelligent Calorie and Macro Tracking System
+# NutriFlow: Intelligent Calorie and Macro Tracking System
 
 ## Abstract
-NutriFlow is a low-friction nutrition tracking system designed to solve a common failure mode in health-tech products: users start calorie tracking with intent, but quickly abandon it because logging feels slow, repetitive, and cognitively heavy. The project focuses on making meal capture fast enough for daily use while still producing actionable calorie and macronutrient insights. Instead of forcing users to enter structured values field by field, NutriFlow accepts natural-language meal text such as "2 roti, dal, one bowl curd," parses the entry into food items and quantities, and computes calories, protein, carbohydrates, fat, and fibre in a single flow. The core objective is not clinical precision; it is sustainable behaviour through reduced interaction cost and continuous feedback.
+NutriFlow is a low-friction nutrition tracking system built to address a common product problem: users start calorie tracking but quickly abandon it because meal logging is slow and mentally tiring. The project focuses on fast, natural-language capture with useful daily feedback. Instead of rigid form entry, users can submit meal text such as "2 roti, dal, curd," and the system converts it into structured items with estimated calories, protein, carbohydrates, fat, and fibre. The goal is practical consistency, not clinical precision.
 
-The implemented system follows a modular product loop with three connected surfaces: meal logging, daily dashboard, and nutrition chat. In the current implementation, a FastAPI backend exposes versioned REST endpoints for meal creation, edit, deletion, history retrieval, day-wise dashboard aggregation, and context-aware chat replies. A Streamlit frontend consumes these APIs and provides four practical tabs: Today, History, Chat, and Settings. The backend uses SQLAlchemy models for users, goals, foods, meals, meal items, daily summaries, and chat messages, with SQLite as the default local database and a structure compatible with migration to PostgreSQL. The parser combines deterministic text normalization with alias-based food resolution and confidence scoring, including fallback assumptions when food items are unknown or quantities are omitted. This keeps logging resilient even when inputs are imperfect.
+The implemented solution follows a modular loop with three surfaces: meal logging, daily dashboard, and nutrition chat. A FastAPI backend exposes versioned APIs for auth, meal CRUD, history, dashboard aggregation, and chat. A Streamlit frontend provides Today, History, Chat, and Settings views. Data is managed with SQLAlchemy models for users, goals, foods, meals, meal items, daily summaries, and chat messages. SQLite is used for local development with a migration path to PostgreSQL.
 
-From a product perspective, NutriFlow prioritizes speed, clarity, and consistency signals. Users receive immediate consumed-versus-target metrics and remaining values for key macros, along with meal count and streak indicators. The chat layer converts day-level nutrition gaps into concise suggestions, reinforcing the next best action rather than generating generic long-form advice. The system deliberately excludes advanced but distracting scope such as barcode scanning, image recognition, or social features in the initial phase. This discipline allows the project to demonstrate a complete end-to-end backend-centered solution where business requirements, data design, API behavior, and user workflow remain tightly aligned. Overall, NutriFlow demonstrates how a focused engineering architecture can convert a high-drop-off wellness task into a repeatable daily habit loop.
+The parser combines deterministic normalization and alias-based food resolution, with explicit fallback assumptions for unknown foods or missing quantities. This keeps logging resilient under imperfect input. After each meal mutation, daily summaries are recomputed to provide consumed/target/remaining macro values and streak indicators. Chat responses are concise and context-aware, based on day-level nutrition gaps. By deliberately excluding higher-scope features in this phase, NutriFlow demonstrates an end-to-end backend-centered system that improves adherence through speed, clarity, and repeatable daily workflow.
 
 ## Project Description
 NutriFlow was conceived as a response to a practical product gap in consumer health applications. Many users understand the value of tracking calorie and macronutrient intake, but most do not maintain the habit for more than a short period. Existing applications often demand high-precision input, extensive search interactions, and too many UI steps per meal. In real-world conditions, especially for working professionals and beginners, these requirements create friction that is stronger than motivation. NutriFlow reframes the problem from "how to maximize nutritional precision" to "how to maximize daily logging consistency while retaining useful guidance." This shift defines the product, the technical architecture, and the implementation priorities documented in this report.
@@ -24,7 +24,7 @@ The dashboard subsystem is designed as the reinforcement engine of the product. 
 
 The chat subsystem is intentionally constrained. It is not positioned as a medical or therapeutic advisor; it provides concise, context-aware suggestions based on logged intake and user prompts. For example, when protein or fibre gaps are present, responses include practical meal suggestions with clear next actions. This design avoids overpromising model intelligence while still adding value at decision points. In both BRD and implementation terms, AI serves as a support layer around the core logging/dashboard loop, not as the center of the product.
 
-The frontend implementation in Streamlit reflects a rapid-delivery strategy focused on validating workflows end to end. The Today tab supports logging and same-day review. The History tab supports date-filtered retrieval, pagination, edit, and delete actions. The Chat tab maintains conversational context and integrates backend responses. The Settings tab allows backend URL and user identity configuration through headers, enabling development-time testing without a full authentication interface. This frontend is intentionally pragmatic: it prioritizes functional coverage of backend capabilities and fast iteration over visual complexity.
+The frontend implementation in Streamlit reflects a rapid-delivery strategy focused on validating workflows end to end. The Today tab supports logging and same-day review. The History tab supports date-filtered retrieval, pagination, edit, and delete actions. The Chat tab maintains conversational context and integrates backend responses. The Settings tab allows backend URL configuration and logout handling while authenticated requests use bearer access tokens. This frontend is intentionally pragmatic: it prioritizes functional coverage of backend capabilities and fast iteration over visual complexity.
 
 Non-functional expectations are embedded into technical choices. The API design is synchronous and straightforward, minimizing request overhead for the primary user path. Input validation, typed schemas, and error handling provide predictable client behavior. Dependency injection for database sessions and user identity simplifies endpoint contracts. Seed food references and alias maps reduce time-to-first-log in local environments. The architecture remains deployment-flexible: while local development currently uses SQLite, models and service boundaries are aligned with migration to PostgreSQL and managed infrastructure when scaling requirements increase.
 
@@ -63,7 +63,7 @@ FR-08 Context-Aware Nutrition Chat: The system shall provide a chat endpoint tha
 
 FR-09 Chat and Interaction Record Persistence: The system shall store user and assistant chat messages with role and context day for continuity and future analysis. This enables traceability, future conversational UX improvements, and integration with personalization modules in later phases. Storage must remain tied to user identity to preserve isolation across user sessions.
 
-FR-10 Consistent User Context Across Endpoints: All core endpoints shall operate against a resolved user identity so that meals, summaries, goals, and chat records are correctly partitioned per user. In the current implementation this is provided through an `x-user-id` header dependency, with automatic user and goal bootstrap where missing. This requirement is foundational for data integrity and is a precursor to stronger authentication in production deployment.
+FR-10 Consistent User Context Across Endpoints: All core endpoints shall operate against a resolved user identity so that meals, summaries, goals, and chat records are correctly partitioned per user. In the current implementation this is provided through bearer-token authentication (`Authorization: Bearer <access_token>`) resolved by `get_current_user`/`get_user_id`, with automatic user and goal bootstrap where missing. This requirement is foundational for data integrity.
 
 FR-11 Input Validation and Error Signaling: The system shall validate request payloads and return clear error responses for invalid input, missing entities, and unsupported operations. Example behaviors include `400` for invalid meal parse/update payloads and `404` for missing meal IDs on update/delete. This requirement ensures predictable client behavior and improves debuggability during integration and future platform hardening.
 
@@ -82,7 +82,7 @@ NFR-05 Maintainability and Modularity: Code organization shall support extension
 
 NFR-06 Scalability Readiness: Even though the current implementation targets local development with SQLite, the design shall remain compatible with migration to production-grade data stores and deployment environments. Data model structure, endpoint contracts, and modular services should permit movement to PostgreSQL, managed caching, and cloud runtime without redesigning the product loop.
 
-NFR-07 Security Baseline: The system shall enforce user-scoped data access at the application level and validate all incoming payloads. Sensitive runtime configuration shall be externalized through environment variables. The current project scope does not implement full production authentication, but requirement intent is explicit compatibility with stronger auth, secret management, and rate limiting in later deployment stages.
+NFR-07 Security Baseline: The system shall enforce user-scoped data access at the application level and validate all incoming payloads. Sensitive runtime configuration shall be externalized through environment variables. The current implementation includes token-based authentication with token expiry and revocation support, and remains compatible with further hardening such as stronger secret management and rate limiting.
 
 NFR-08 Cost-Aware Intelligence: AI-assisted behavior should remain lightweight and context-driven, avoiding high-cost model invocation patterns for simple deterministic tasks. Parsing and mapping should prefer deterministic methods first, with AI kept as supplementary support logic where needed. This requirement ensures the architecture remains economically viable as request volume grows.
 
@@ -120,7 +120,7 @@ These constraints favor a modular monolith. A microservice architecture would in
 
 ### System Context and External Interfaces
 
-NutriFlow currently operates as a single-tenant runtime process with user scoping at the application layer. The frontend communicates with the backend over HTTP and sends `x-user-id` for user context. The backend exposes a stable API prefix (`/api/v1`) and routes requests to feature modules. The database is accessed through SQLAlchemy session dependency injection. In local mode, SQLite is used; the architecture remains portable to PostgreSQL by design since model definitions and query patterns are database-agnostic for primary operations.
+NutriFlow currently operates as a single-process runtime with user scoping enforced at the API dependency layer. The frontend communicates with the backend over HTTP and sends `Authorization: Bearer <access_token>` for protected routes. The backend exposes a stable API prefix (`/api/v1`) and routes requests to feature modules. The database is accessed through SQLAlchemy session dependency injection. In local mode, SQLite is used; the architecture remains portable to PostgreSQL by design since model definitions and query patterns are database-agnostic for primary operations.
 
 External interface types are:
 1. Human-to-system input: free-text meals, dashboard day selection, chat prompts, and history filters.
@@ -148,7 +148,7 @@ This decomposition makes behavior discoverable and testable. Endpoint handlers r
 
 A typical request flow follows this sequence:
 
-1. Frontend action triggers `BackendClient` request with JSON body and `x-user-id` header.
+1. Frontend action triggers `BackendClient` request with JSON body and bearer token header for protected routes.
 2. FastAPI router matches route and validates payload against Pydantic schema.
 3. Dependency injection resolves database session and user identifier.
 4. Endpoint ensures user and goal records exist (`ensure_user_and_goal`).
@@ -325,8 +325,9 @@ Initialization architecture:
 3. Seed food data is inserted lazily on first meal path.
 
 User context architecture:
-1. `get_user_id` dependency resolves `x-user-id` with local default.
-2. `ensure_user_and_goal` guarantees user graph exists before business action.
+1. `get_token` extracts bearer credentials and `get_current_user` validates token state.
+2. `get_user_id` derives identity from the authenticated user object.
+3. `ensure_user_and_goal` guarantees user graph exists before business action.
 
 Health and operations:
 1. Root endpoint confirms service availability.
@@ -357,7 +358,7 @@ Maintainability:
 3. Domain logic centralization prevents endpoint-level duplication.
 
 Security posture:
-1. User scoping exists, but full auth is intentionally deferred for scope.
+1. Protected routes enforce bearer-token auth with expiry and revocation checks.
 2. Configuration externalization supports secure secret handling in production.
 3. Validation and bounded payload lengths reduce abuse vectors.
 
@@ -440,7 +441,7 @@ Key fields:
 3. `created_at` (DateTime): audit timestamp.
 
 Rationale:
-1. Even in local mode using header-based user resolution, storing a concrete user entity preserves relational integrity.
+1. Even in local mode using token-authenticated user resolution, storing a concrete user entity preserves relational integrity.
 2. Keeping `email` nullable allows frictionless local testing and phased onboarding implementation.
 3. This table acts as the parent for goals, meals, summaries, and chat messages.
 
@@ -712,7 +713,7 @@ This is an important design strength. It preserves explainability and supports u
 
 ### Multi-User Isolation and Access Patterns
 
-The schema is single-database, multi-user by key partitioning. Every user-generated event row carries `user_id`, and service queries scope by that key. This enforces logical isolation at query level even before full auth implementation.
+The schema is single-database, multi-user by key partitioning. Every user-generated event row carries `user_id`, and service queries scope by that key. This enforces logical isolation at query level and aligns with bearer-token authenticated access.
 
 Practical implications:
 1. One user's meal IDs are not visible or mutable by another user when proper scoping is applied.
@@ -802,8 +803,8 @@ Although foundational, this layer directly supports feature reliability. Version
 
 NutriFlow currently uses a pragmatic user-context strategy built for fast development and repeatable demos:
 
-1. `x-user-id` header is read by `get_user_id`.
-2. Missing header defaults to `demo-user` for zero-friction local use.
+1. User identity is established by login/register and bearer token issuance.
+2. Protected routes use `get_token` + `get_current_user`; `get_user_id` is derived from authenticated context.
 3. `ensure_user_and_goal` ensures both `User` and `UserGoal` records exist before feature execution.
 
 This pattern is a feature enabler, not only a technical shortcut. It guarantees that first-time interactions never fail due to missing profile setup. It also keeps all downstream features (meal logging, dashboard, chat) consistently user-scoped. The bootstrap behavior reduces edge-case branching inside domain services and allows feature logic to assume a valid user-goal graph.
@@ -1233,9 +1234,9 @@ During development, several design choices were made consciously:
 3. Recompute summary on each mutation vs incremental delta updates:
    a. Chosen recompute for correctness clarity.
    b. Acceptable performance at current scale.
-4. Header-based user identity vs full auth:
-   a. Chosen for rapid local development and backend focus.
-   b. Structured to allow auth replacement later.
+4. Token-based auth with persistent bearer sessions:
+   a. Chosen to keep user isolation explicit across all protected endpoints.
+   b. Supports production hardening through expiry/revocation and stricter claims policies.
 5. Deterministic chat response builder vs LLM-heavy orchestration:
    a. Chosen for cost/predictability.
    b. Extensible to richer recommendation engines later.
@@ -1275,7 +1276,7 @@ Each enhancement can be added without major re-architecture because current feat
 A representative flow demonstrates how developed features work together:
 
 1. User opens Today tab and enters: "2 roti, dal, curd".
-2. Frontend posts to meal creation endpoint with user header.
+2. Frontend posts to meal creation endpoint with bearer token credentials.
 3. Backend ensures user + goals, seeds foods if needed, parses text, stores meal/items, recomputes summary.
 4. API responds with parsed items, totals, and confidence.
 5. UI reruns and fetches dashboard for selected day.
@@ -1333,3 +1334,4 @@ Feature development in NutriFlow successfully transformed a scoped set of busine
 
 ## Conclusion
 <Summarize outcomes, learnings, limitations, and future scope.>
+
