@@ -186,4 +186,7 @@ tmp_*/
 .vscode/
 
 # Database file
-backend\nutriflow.db
+*.db
+
+# Test files
+test*.py
