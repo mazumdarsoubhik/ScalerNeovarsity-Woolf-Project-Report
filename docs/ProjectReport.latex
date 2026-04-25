@@ -97,7 +97,12 @@ The parser combines deterministic normalization and alias-based food resolution,
 
 NutriFlow was conceived as a response to a practical product gap in consumer health applications. Many users understand the value of tracking calorie and macronutrient intake, but most do not maintain the habit for more than a short period. Existing applications often demand high-precision input, extensive search interactions, and too many UI steps per meal. In real-world conditions, especially for working professionals and beginners, these requirements create friction that is stronger than motivation. NutriFlow reframes the problem from "how to maximize nutritional precision" to "how to maximize daily logging consistency while retaining useful guidance." This shift defines the product, the technical architecture, and the implementation priorities documented in this report.
 
-\textit{Figure 1: Project flow and user journey showing the loop from meal logging to parsing, dashboard feedback, chat guidance, and correction actions.}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{assets/User Journey Diagram.png}}
+\caption{Project flow and user journey showing the loop from meal logging to parsing, dashboard feedback, chat guidance, and correction actions.}
+\label{fig:user-journey}
+\end{figure}
 
 The central objective of NutriFlow is to make meal logging possible in under a few seconds per entry while still providing meaningful visibility into calories and macros. The system encourages users to log quickly in plain language, then translates those entries into structured nutrition data that can be aggregated over the day. Instead of presenting tracking as a compliance-heavy data entry burden, NutriFlow positions tracking as a lightweight reflection loop: log food, view updated progress, understand remaining targets, and decide the next meal more consciously. This loop is intentionally narrow and repeatable. Features that do not strengthen this loop are deprioritized in the current scope.
 
@@ -125,7 +130,12 @@ In summary, NutriFlow is a backend-driven applied software project that demonstr
 
 \section{Requirement Gathering}
 
-\textit{Figure 2: Use case diagram showing primary actors and major system interactions across authentication, meal tracking, dashboard, history, chat, and settings.}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{assets/Use Case Diagram.png}}
+\caption{Use case diagram showing primary actors and major system interactions across authentication, meal tracking, dashboard, history, chat, and settings.}
+\label{fig:use-case}
+\end{figure}
 
 Requirement gathering for NutriFlow was carried out with a product-first, backend-grounded approach. The objective was to define requirements that are both meaningful for end users and directly traceable to implementable API, data, and service behavior. Instead of collecting a broad set of speculative features, the process emphasized high-frequency actions that users perform daily and that determine retention outcomes. The project deliberately treated meal logging as a behavioral workflow problem rather than only a data accuracy problem. Therefore, requirement quality was evaluated on two axes at the same time: technical feasibility and expected impact on habit continuity.
 
@@ -191,9 +201,19 @@ Overall, the requirement gathering output defines NutriFlow as a focused, behavi
 
 \section{System Architecture}
 
-\textit{Figure 3: High-level component architecture showing user interaction through Streamlit frontend, FastAPI backend modules, service layer, data store, and external LLM connectors.}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{assets/High Level Component Architecture Diagram.png}}
+\caption{High-level component architecture showing user interaction through Streamlit frontend, FastAPI backend modules, service layer, data store, and external LLM connectors.}
+\label{fig:component-architecture}
+\end{figure}
 
-\textit{Figure 4: Meal logging sequence from user input through parsing, food resolution, persistence, summary recomputation, and dashboard refresh response.}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{assets/Meal Logging Sequence Diagram.png}}
+\caption{Meal logging sequence from user input through parsing, food resolution, persistence, summary recomputation, and dashboard refresh response.}
+\label{fig:meal-logging-sequence}
+\end{figure}
 
 NutriFlow is implemented as a backend-centered, modular monolith architecture designed for low-friction feature delivery, clear service boundaries, and straightforward evolution to production infrastructure. The architecture was selected to support the core product loop at high reliability: natural-language meal logging, daily macro aggregation, and contextual nutrition guidance. Instead of prematurely splitting the system into multiple distributed services, the project keeps domain responsibilities separated inside a single FastAPI application and a single relational database. This allows strong transaction consistency for meal operations while preserving maintainability through explicit module boundaries.
 
@@ -583,7 +603,12 @@ NutriFlow's system architecture is intentionally focused, modular, and requireme
 
 \section{Database Design}
 
-\textit{Figure 5: Brief ER diagram showing core entities and key relationships used for authentication, meal logging, aggregation, and chat context.}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{assets/ER Diagram Brief.png}}
+\caption{Brief ER diagram showing core entities and key relationships used for authentication, meal logging, aggregation, and chat context.}
+\label{fig:er-brief}
+\end{figure}
 
 The NutriFlow database is designed to support a behavior-first nutrition tracking workflow where fast meal capture, transparent estimation, daily aggregation, and correction-friendly history are all first-class requirements. The schema intentionally balances transactional integrity with analytical readability. Instead of building separate operational and warehouse databases at this stage, the design uses a single relational schema that can serve both CRUD-heavy logging operations and day-level dashboard summarization. This is appropriate for the project scope because it keeps consistency high, reduces orchestration complexity, and preserves end-to-end traceability between user input and computed nutrition outputs.
 
@@ -628,7 +653,7 @@ This split is deliberate. Master entities change slowly and define context. Even
 
 \subsection{Table Specification and Rationale}
 
-\subsubsection{1. \texttt{users}}
+\subsubsection{\texttt{users}}
 
 Purpose: root identity anchor for all user-scoped data.
 
@@ -657,7 +682,7 @@ Relationship role:
 \item One-to-one logical with \texttt{user\_goals} (enforced by unique key on \texttt{user\_goals.user\_id}).
 \end{enumerate}
 
-\subsubsection{2. \texttt{user\_goals}}
+\subsubsection{\texttt{user\_goals}}
 
 Purpose: store per-user nutrition targets used for dashboard comparisons.
 
@@ -688,7 +713,7 @@ Design note:
 \item The service layer bootstraps goals via \texttt{ensure\_user\_and\_goal}, ensuring summary generation is never blocked by missing targets.
 \end{enumerate}
 
-\subsubsection{3. \texttt{foods}}
+\subsubsection{\texttt{foods}}
 
 Purpose: canonical nutrition reference and alias resolution base.
 
@@ -719,7 +744,7 @@ Trade-off:
 \item For larger scale, alias normalization into separate \texttt{food\_aliases} table could improve query flexibility and data governance.
 \end{enumerate}
 
-\subsubsection{4. \texttt{meals}}
+\subsubsection{\texttt{meals}}
 
 Purpose: represent a single meal logging event by a user.
 
@@ -751,7 +776,7 @@ Relationship behavior:
 \item Belongs to \texttt{users} with cascade on user delete.
 \end{enumerate}
 
-\subsubsection{5. \texttt{meal\_items}}
+\subsubsection{\texttt{meal\_items}}
 
 Purpose: normalized food-item components generated from meal parsing or manual item updates.
 
@@ -786,7 +811,7 @@ Important design choice:
 \item \texttt{canonical\_name} is stored even when \texttt{food\_id} exists, creating a stable display field and reducing join dependency in read-heavy paths.
 \end{enumerate}
 
-\subsubsection{6. \texttt{daily\_summaries}}
+\subsubsection{\texttt{daily\_summaries}}
 
 Purpose: materialized per-user, per-day macro totals and meal count.
 
@@ -815,7 +840,7 @@ Rationale:
 \item Summary rows are recomputed after meal create/update/delete, ensuring deterministic consistency.
 \end{enumerate}
 
-\subsubsection{7. \texttt{chat\_messages}}
+\subsubsection{\texttt{chat\_messages}}
 
 Purpose: persist conversational context and assistant outputs for each user.
 
@@ -1986,91 +2011,28 @@ Overall, NutriFlow achieves its primary objective: transforming nutrition tracki
 
 \begin{enumerate}
 \item FastAPI. \textit{FastAPI Documentation}. Available at: https://fastapi.tiangolo.com/.
-\end{enumerate}
-
-\begin{enumerate}
 \item FastAPI. \textit{Deployment - FastAPI}. Available at: https://fastapi.tiangolo.com/deployment/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Streamlit. \textit{Streamlit Documentation}. Available at: https://docs.streamlit.io/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Streamlit. \textit{Basic concepts of Streamlit}. Available at: https://docs.streamlit.io/get-started/fundamentals/main-concepts.
-\end{enumerate}
-
-\begin{enumerate}
 \item SQLAlchemy authors. \textit{SQLAlchemy Documentation}. Available at: https://docs.sqlalchemy.org/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Pydantic Services Inc. \textit{Pydantic Documentation}. Available at: https://docs.pydantic.dev/latest/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Alembic authors. \textit{Alembic Documentation}. Available at: https://alembic.sqlalchemy.org/.
-\end{enumerate}
-
-\begin{enumerate}
 \item SQLite. \textit{SQLite Documentation}. Available at: https://sqlite.org/docs.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item PostgreSQL Global Development Group. \textit{PostgreSQL Documentation}. Available at: https://www.postgresql.org/docs/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Fowler, M. \textit{Monolith First}. Available at: https://martinfowler.com/bliki/MonolithFirst.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item Jones, M., Bradley, J. and Sakimura, N. \textit{RFC 7519: JSON Web Token (JWT)}. Internet Engineering Task Force, 2015. Available at: https://datatracker.ietf.org/doc/html/rfc7519.
-\end{enumerate}
-
-\begin{enumerate}
 \item Amazon Web Services. \textit{What is Amazon EC2?} Available at: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item Amazon Web Services. \textit{What is Amazon VPC?} Available at: https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item Amazon Web Services. \textit{Control traffic to your AWS resources using security groups}. Available at: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item Amazon Web Services. \textit{What is Amazon Relational Database Service (Amazon RDS)?} Available at: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item Amazon Web Services. \textit{What is Amazon ElastiCache?} Available at: https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item Amazon Web Services. \textit{What is AWS Elastic Beanstalk?} Available at: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html.
-\end{enumerate}
-
-\begin{enumerate}
 \item U.S. Department of Agriculture. \textit{FoodData Central}. Available at: https://fdc.nal.usda.gov/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Burke, L. E., Wang, J. and Sevick, M. A. \textit{Self-Monitoring in Weight Loss: A Systematic Review of the Literature}. \textit{Journal of the American Dietetic Association}, 2011. Available at: https://pubmed.ncbi.nlm.nih.gov/21185970/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Peterson, N. D., Middleton, K. R., Nackers, L. M., Medina, K. E., Milsom, V. A. and Perri, M. G. \textit{Dietary Self-Monitoring and Long-Term Success with Weight Management}. \textit{Obesity}, 2014. Available at: https://pmc.ncbi.nlm.nih.gov/articles/PMC4149603/.
-\end{enumerate}
-
-\begin{enumerate}
 \item Raber, M., Liao, Y., Rara, A., Schembre, S. M., Krause, K. J., Strong, L., Daniel-MacDougall, C. and Basen-Engquist, K. \textit{A Systematic Review of the Use of Dietary Self-Monitoring in Behavioral Weight-Loss Interventions: Delivery, Intensity and Effectiveness}. \textit{Public Health Nutrition}, 2021. Available at: https://pubmed.ncbi.nlm.nih.gov/34412727/.
 \end{enumerate}
 \end{document}
-
-
-
 
 
 
