@@ -10,6 +10,9 @@ The parser combines deterministic normalization and alias-based food resolution,
 ## Project Description
 NutriFlow was conceived as a response to a practical product gap in consumer health applications. Many users understand the value of tracking calorie and macronutrient intake, but most do not maintain the habit for more than a short period. Existing applications often demand high-precision input, extensive search interactions, and too many UI steps per meal. In real-world conditions, especially for working professionals and beginners, these requirements create friction that is stronger than motivation. NutriFlow reframes the problem from "how to maximize nutritional precision" to "how to maximize daily logging consistency while retaining useful guidance." This shift defines the product, the technical architecture, and the implementation priorities documented in this report.
 
+![User Journey Diagram](assets/User%20Journey%20Diagram.png)
+*Figure 1: Project flow and user journey showing the loop from meal logging to parsing, dashboard feedback, chat guidance, and correction actions.*
+
 The central objective of NutriFlow is to make meal logging possible in under a few seconds per entry while still providing meaningful visibility into calories and macros. The system encourages users to log quickly in plain language, then translates those entries into structured nutrition data that can be aggregated over the day. Instead of presenting tracking as a compliance-heavy data entry burden, NutriFlow positions tracking as a lightweight reflection loop: log food, view updated progress, understand remaining targets, and decide the next meal more consciously. This loop is intentionally narrow and repeatable. Features that do not strengthen this loop are deprioritized in the current scope.
 
 The intended users are individuals who want practical nutrition awareness but are not willing to perform detailed food journaling every day. Primary personas include office-going professionals, students, and early-stage fitness users who need direction but not complexity. For these users, the product must satisfy three requirements simultaneously: low effort of use, immediate interpretability of output, and flexibility for imperfect input. NutriFlow addresses each requirement through explicit design choices. It accepts free-form text instead of requiring rigid forms, exposes consumed/target/remaining values to reduce mental calculations, and allows edits/deletes in history so users can correct approximate entries without losing trust in the system.
@@ -35,6 +38,8 @@ The project also acknowledges current limitations. Food coverage is finite and r
 In summary, NutriFlow is a backend-driven applied software project that demonstrates how disciplined scope and practical engineering can improve adherence in a common but high-drop-off health behavior. It does not attempt to solve every nutrition problem at once. Instead, it solves one critical product challenge well: converting meal tracking from a high-friction task into a repeatable daily workflow supported by clear feedback and lightweight intelligence. This focus is what makes the current implementation technically coherent, user-relevant, and extensible for subsequent development phases.
 
 ## Requirement Gathering
+![Use Case Diagram](assets/Use%20Case%20Diagram.png)
+*Figure 2: Use case diagram showing primary actors and major system interactions across authentication, meal tracking, dashboard, history, chat, and settings.*
 
 Requirement gathering for NutriFlow was carried out with a product-first, backend-grounded approach. The objective was to define requirements that are both meaningful for end users and directly traceable to implementable API, data, and service behavior. Instead of collecting a broad set of speculative features, the process emphasized high-frequency actions that users perform daily and that determine retention outcomes. The project deliberately treated meal logging as a behavioral workflow problem rather than only a data accuracy problem. Therefore, requirement quality was evaluated on two axes at the same time: technical feasibility and expected impact on habit continuity.
 
@@ -97,6 +102,12 @@ Acceptance Orientation for This Phase: A requirement in this phase is considered
 Overall, the requirement gathering output defines NutriFlow as a focused, behavior-oriented nutrition system. The functional requirements ensure the product can capture, structure, aggregate, and explain daily intake. The non-functional requirements ensure that these capabilities remain fast, reliable, understandable, and extensible. Together they establish a coherent baseline for the next report sections on architecture, database design, and feature implementation detail.
 
 ## System Architecture
+![High Level Component Architecture Diagram](assets/High%20Level%20Component%20Architecture%20Diagram.png)
+*Figure 3: High-level component architecture showing user interaction through Streamlit frontend, FastAPI backend modules, service layer, data store, and external LLM connectors.*
+
+![Meal Logging Sequence Diagram](assets/Meal%20Logging%20Sequence%20Diagram.png)
+*Figure 4: Meal logging sequence from user input through parsing, food resolution, persistence, summary recomputation, and dashboard refresh response.*
+
 NutriFlow is implemented as a backend-centered, modular monolith architecture designed for low-friction feature delivery, clear service boundaries, and straightforward evolution to production infrastructure. The architecture was selected to support the core product loop at high reliability: natural-language meal logging, daily macro aggregation, and contextual nutrition guidance. Instead of prematurely splitting the system into multiple distributed services, the project keeps domain responsibilities separated inside a single FastAPI application and a single relational database. This allows strong transaction consistency for meal operations while preserving maintainability through explicit module boundaries.
 
 At a high level, the architecture consists of five layers: presentation layer, API orchestration layer, domain service layer, persistence layer, and operational configuration layer. The presentation layer is a Streamlit client that captures user intent and renders dashboards, history, and chat. The API layer exposes versioned HTTP endpoints and handles validation, dependency resolution, and error translation. The domain service layer performs parsing, food mapping, macro computation, summary recomputation, and chat response generation. The persistence layer stores users, goals, foods, meals, meal items, summaries, and chat messages using SQLAlchemy models. The operational layer handles runtime configuration and initialization concerns such as database bootstrap, environment variables, and health checks.
@@ -394,6 +405,9 @@ Every step in this journey is serviced by a dedicated module with explicit contr
 NutriFlow's system architecture is intentionally focused, modular, and requirement-driven. The modular monolith approach delivers a strong balance of speed, correctness, and clarity for a backend specialization project. By keeping parsing, aggregation, and guidance logic in well-scoped services, and by enforcing typed API contracts over a stable data model, the system achieves end-to-end coherence for the product's central behavior loop. The architecture is production-aware without being over-engineered, and it is extensible enough to support future enhancements such as richer food intelligence, personalized recommendations, stronger authentication, and cloud-scale deployment patterns.
 
 ## Database Design
+![ER Diagram Brief](assets/ER%20Diagram%20Brief.png)
+*Figure 5: Brief ER diagram showing core entities and key relationships used for authentication, meal logging, aggregation, and chat context.*
+
 The NutriFlow database is designed to support a behavior-first nutrition tracking workflow where fast meal capture, transparent estimation, daily aggregation, and correction-friendly history are all first-class requirements. The schema intentionally balances transactional integrity with analytical readability. Instead of building separate operational and warehouse databases at this stage, the design uses a single relational schema that can serve both CRUD-heavy logging operations and day-level dashboard summarization. This is appropriate for the project scope because it keeps consistency high, reduces orchestration complexity, and preserves end-to-end traceability between user input and computed nutrition outputs.
 
 From an implementation standpoint, the current system uses SQLAlchemy declarative models and defaults to SQLite for local execution. However, entity structure, constraints, and query patterns are intentionally portable to PostgreSQL for production deployment. The schema is normalized around a clear domain model: users own goals, meals, summaries, and chat messages; meals contain itemized food entries; food reference data provides canonical nutrient values and alias mapping. This model directly reflects product requirements: log quickly, compute macros consistently, view daily progress, and correct entries when needed.
@@ -1329,9 +1343,217 @@ This module-level decomposition is one reason the project could expand feature d
 
 Feature development in NutriFlow successfully transformed a scoped set of business requirements into a working, integrated application where users can log meals naturally, understand day-level nutritional status, correct historical records, and receive context-aware guidance. The implementation emphasizes practical usability and deterministic consistency while preserving extension points for future intelligence and scale. By building features as complete vertical slices and grounding them in explicit service/database contracts, the project achieved a coherent and defensible architecture-to-product alignment suitable for both academic reporting and real-world evolution.
 
+## Technologies Used
+
+NutriFlow is built with a practical, backend-first stack chosen for fast implementation, maintainability, and production migration readiness.
+
+### Backend and API Layer
+
+1. FastAPI (Python): FastAPI is the core web framework used to expose versioned REST endpoints for authentication, meals, dashboard, and chat. It provides high development speed, automatic OpenAPI documentation, and strong request/response validation through typed schemas.
+   Real-life usage: Startups and internal platforms often use FastAPI to ship data-driven APIs quickly while preserving code quality and clear contracts.
+   Example applications: recommendation APIs, analytics backends, IoT control APIs, internal enterprise microservices.
+
+2. Uvicorn (ASGI server): Uvicorn runs the FastAPI app in local and production environments with efficient asynchronous request handling.
+   Real-life usage: commonly used as the runtime server for modern Python API deployments behind Nginx or load balancers.
+   Example applications: high-concurrency webhook handlers and API gateways.
+
+### Data and Persistence Layer
+
+3. SQLAlchemy 2.x (ORM): SQLAlchemy is used for relational modeling, entity relationships, and query composition. It allows the codebase to remain portable across SQLite (development) and PostgreSQL/MySQL-compatible relational systems in production.
+   Real-life usage: teams use SQLAlchemy to enforce clean data models, FK relationships, and transaction-safe operations in business-critical systems.
+   Example applications: fintech ledgers, healthcare record backends, SaaS tenant databases.
+
+4. SQLite (development) and PostgreSQL/RDS-ready design (production): SQLite keeps local setup lightweight for rapid iteration, while the schema and service patterns are designed to migrate cleanly to production-grade managed databases.
+   Real-life usage: local prototyping with SQLite followed by cloud-hosted relational DB adoption for scale and concurrency.
+   Example applications: MVP products moving to managed cloud databases after initial validation.
+
+### Validation, Configuration, and Security
+
+5. Pydantic v2: Pydantic enforces payload validation and typed response contracts at the API boundary.
+   Real-life usage: strict input/output validation reduces production bugs and integration mismatches across teams.
+   Example applications: public APIs requiring stable contracts for multiple client applications.
+
+6. python-dotenv and environment-based config: runtime values (DB URL, token settings, provider keys) are loaded from environment variables to separate code from secrets.
+   Real-life usage: secure configuration management across dev, staging, and production.
+   Example applications: any cloud-deployed app requiring environment-specific behavior.
+
+7. Token-based authentication with hashed storage: bearer tokens are issued to users and persisted as hashes with expiry/revocation checks.
+   Real-life usage: session management for SPA/mobile + API systems where stateless access control and revocation are required.
+   Example applications: account-based productivity platforms, subscription dashboards, internal admin tools.
+
+### Frontend and Experience Layer
+
+8. Streamlit: Streamlit is used for rapid delivery of a functional web UI with tabs for Today, History, Chat, and Settings.
+   Real-life usage: teams use Streamlit for operational tools, analytics products, and early-stage customer-facing prototypes.
+   Example applications: BI dashboards, model monitoring consoles, health/fitness tracker interfaces.
+
+9. Requests (HTTP client): The frontend uses a centralized API client for backend communication and unified error handling.
+   Real-life usage: client abstractions simplify authentication headers, retry/error behavior, and maintainability.
+   Example applications: web and scripting clients interacting with internal or third-party APIs.
+
+### AI Integration Layer
+
+10. Multi-provider LLM connector pattern (Groq, Gemini, Mistral, Mock fallback): NutriFlow integrates LLMs for chat and parser-assist flows through a provider-factory abstraction, with deterministic fallback when external calls fail.
+    Real-life usage: production systems often support multiple model providers to reduce vendor risk and improve resiliency.
+    Example applications: support copilots, context-aware assistants, data-enrichment pipelines.
+
+### Cloud and Operations (Target Production Stack)
+
+11. AWS deployment components (VPC, EC2/Elastic Beanstalk, RDS, Security Groups, cache): the deployment design follows cloud best practices with network isolation, managed database, and optional caching for hot paths.
+    Real-life usage: small teams and enterprises deploy API-based products on AWS using this exact pattern for reliability and operational control.
+    Example applications: SaaS APIs, e-commerce services, EdTech platforms, health-tracking apps.
+
+### Technology Selection Rationale
+
+The stack was selected using three criteria:
+
+1. Speed of delivery for an end-to-end backend specialization project.
+2. Strong maintainability through typed contracts and modular service boundaries.
+3. Straightforward migration path from local development to managed cloud production.
+
 ## Deployment
-<Describe deployment setup, infrastructure, runtime, and environments.>
+
+### Deployment Flow (AWS)
+
+NutriFlow can be deployed on AWS using a network-isolated, managed-infrastructure approach. The flow below describes how requests and data move through the deployment architecture.
+
+1. Client access:
+   Users access the Streamlit frontend over HTTPS. The frontend communicates with the FastAPI backend using authenticated API calls.
+
+2. VPC setup:
+   All backend infrastructure is placed inside a dedicated AWS VPC with public and private subnets.
+   Public subnet: load balancer/reverse proxy entry point.
+   Private subnet: application runtime and database tiers.
+
+3. Security Groups:
+   Security groups enforce least-privilege traffic rules.
+   Frontend/ALB SG allows inbound HTTPS (443) from the internet.
+   App SG allows inbound backend traffic only from frontend/ALB SG.
+   DB SG allows inbound database port only from app SG.
+   Cache SG allows inbound cache port only from app SG.
+
+4. Application runtime (EC2 or Elastic Beanstalk):
+   Option A - EC2: deploy FastAPI + Uvicorn as a systemd service on EC2 instances behind an ALB.
+   Option B - Elastic Beanstalk (managed infra): deploy the same backend as an application environment with managed scaling, health checks, and rolling updates.
+   Both options run the same application code and environment-variable configuration model.
+
+5. Database layer (RDS):
+   Move from local SQLite to Amazon RDS (PostgreSQL recommended for this architecture).
+   RDS runs in private subnets with automated backups, patching windows, and Multi-AZ (if required).
+
+6. Cache layer:
+   Add Amazon ElastiCache (Redis) for hot-read acceleration and response optimization.
+   Typical cache targets: food alias map, frequently requested dashboard reads, and short-lived chat context fragments.
+
+7. Configuration and secrets:
+   Runtime configuration is injected via environment variables; secrets should be managed through AWS Secrets Manager or SSM Parameter Store.
+
+8. Observability and operations:
+   Application and infrastructure logs stream to CloudWatch.
+   Health checks are exposed via `/api/v1/health`.
+   Alerts can be configured on error rate, latency, instance health, and DB utilization.
+
+9. CI/CD and release path:
+   Source push triggers build/test pipeline.
+   Successful builds deploy to staging, then production with controlled rollout.
+   If Elastic Beanstalk is used, deployment versions are managed per environment with rollback support.
+
+### Deployment Architecture Summary
+
+In production, the recommended topology is:
+`User -> HTTPS -> Frontend -> ALB/Reverse Proxy -> FastAPI App (EC2 or Elastic Beanstalk) -> RDS (+ optional ElastiCache)`.
+
+This design preserves the current code architecture while improving security, scalability, and operational reliability.
 
 ## Conclusion
-<Summarize outcomes, learnings, limitations, and future scope.>
+NutriFlow demonstrates that a focused, backend-first architecture can solve a high-drop-off product problem with practical engineering trade-offs. The implemented system successfully delivers the full daily loop of natural-language meal logging, structured macro computation, dashboard feedback, history-based correction, and context-aware chat guidance. The project validates that consistency-oriented design can create meaningful user value even when nutritional estimation is approximate.
 
+### Key Takeaways
+
+1. Problem-first scope improves execution quality: limiting scope to the core behavior loop (log -> understand -> act -> correct) produced a complete and reliable implementation instead of a partially built feature set.
+2. Modular monolith architecture is effective for this stage: separating API, services, schemas, and models provided maintainability and clear requirement-to-code traceability without distributed-system overhead.
+3. Deterministic parsing with transparent assumptions is practical: storing confidence and assumptions alongside parsed items improves trust and supports correction workflows.
+4. Materialized daily summaries simplify product logic: recomputing and storing day-level aggregates keeps dashboard and chat context consistent after meal mutations.
+5. Reliability is strengthened by correction paths: update/delete support and history retrieval are essential in approximate systems where user edits are expected.
+6. Resilient AI integration matters: provider abstraction with fallback behavior prevents external model failures from breaking core user workflows.
+
+### Practical Applications
+
+The architecture and technology choices used in NutriFlow have direct real-world relevance across domains:
+
+1. Health and fitness platforms: fast natural-language capture with interpretable feedback can improve adherence in calorie and macro tracking products.
+2. Digital coaching tools: context-aware assistance based on recent user state can support recommendations in nutrition, wellness, and habit-formation apps.
+3. EdTech and productivity systems: the same pattern of event logging + daily aggregation + assistant guidance can be reused for learning progress and task management.
+4. Enterprise operational tools: modular API/service/data layering supports rapid internal tool development while keeping migration paths open to managed infrastructure.
+
+These applications show that the project is not only academically complete, but also transferable to production-oriented software scenarios.
+
+### Limitations, Cost Implications, and Improvement Suggestions
+
+Current limitations:
+
+1. Nutritional precision is approximate, especially for mixed dishes and regional food diversity.
+2. Food catalog and alias coverage are finite, affecting parse quality for long-tail inputs.
+3. Chat recommendations are intentionally lightweight and not medical-grade advice.
+4. Automated test coverage and production observability are still limited for large-scale operation.
+
+Cost implications:
+
+1. LLM usage introduces variable per-request cost and latency, especially under sustained chat/parser-assist traffic.
+2. Managed cloud components (RDS, ElastiCache, load balancing, monitoring) increase monthly operating cost compared to local/single-node setups.
+3. Scaling for concurrency (multi-instance app, managed DB tiers) requires ongoing spend and capacity planning.
+
+Suggestions for improvement:
+
+1. Expand curated food corpus and alias normalization to reduce unknown-food fallbacks.
+2. Apply selective LLM invocation only for ambiguous inputs, with caching for repeated lookups, to control cost.
+3. Add migration tooling, automated tests, and CI gates for regression safety.
+4. Introduce richer observability (metrics, traces, SLO-based alerts) for production readiness.
+5. Add stronger auth hardening, rate limiting, and secret-management controls for internet-facing deployments.
+6. Extend analytics with weekly/monthly trends and goal-adjustment workflows for deeper user retention.
+
+Overall, NutriFlow achieves its primary objective: transforming nutrition tracking from a high-friction manual task into a repeatable, insight-driven daily workflow. The implementation is technically coherent, operationally extensible, and well-positioned for next-phase improvements in precision, personalization, and scale.
+
+## References
+
+1. FastAPI. *FastAPI Documentation*. Available at: https://fastapi.tiangolo.com/.
+
+2. FastAPI. *Deployment - FastAPI*. Available at: https://fastapi.tiangolo.com/deployment/.
+
+3. Streamlit. *Streamlit Documentation*. Available at: https://docs.streamlit.io/.
+
+4. Streamlit. *Basic concepts of Streamlit*. Available at: https://docs.streamlit.io/get-started/fundamentals/main-concepts.
+
+5. SQLAlchemy authors. *SQLAlchemy Documentation*. Available at: https://docs.sqlalchemy.org/.
+
+6. Pydantic Services Inc. *Pydantic Documentation*. Available at: https://docs.pydantic.dev/latest/.
+
+7. Alembic authors. *Alembic Documentation*. Available at: https://alembic.sqlalchemy.org/.
+
+8. SQLite. *SQLite Documentation*. Available at: https://sqlite.org/docs.html.
+
+9. PostgreSQL Global Development Group. *PostgreSQL Documentation*. Available at: https://www.postgresql.org/docs/.
+
+10. Fowler, M. *Monolith First*. Available at: https://martinfowler.com/bliki/MonolithFirst.html.
+
+11. Jones, M., Bradley, J. and Sakimura, N. *RFC 7519: JSON Web Token (JWT)*. Internet Engineering Task Force, 2015. Available at: https://datatracker.ietf.org/doc/html/rfc7519.
+
+12. Amazon Web Services. *What is Amazon EC2?* Available at: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html.
+
+13. Amazon Web Services. *What is Amazon VPC?* Available at: https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html.
+
+14. Amazon Web Services. *Control traffic to your AWS resources using security groups*. Available at: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html.
+
+15. Amazon Web Services. *What is Amazon Relational Database Service (Amazon RDS)?* Available at: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html.
+
+16. Amazon Web Services. *What is Amazon ElastiCache?* Available at: https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html.
+
+17. Amazon Web Services. *What is AWS Elastic Beanstalk?* Available at: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html.
+
+18. U.S. Department of Agriculture. *FoodData Central*. Available at: https://fdc.nal.usda.gov/.
+
+19. Burke, L. E., Wang, J. and Sevick, M. A. *Self-Monitoring in Weight Loss: A Systematic Review of the Literature*. *Journal of the American Dietetic Association*, 2011. Available at: https://pubmed.ncbi.nlm.nih.gov/21185970/.
+
+20. Peterson, N. D., Middleton, K. R., Nackers, L. M., Medina, K. E., Milsom, V. A. and Perri, M. G. *Dietary Self-Monitoring and Long-Term Success with Weight Management*. *Obesity*, 2014. Available at: https://pmc.ncbi.nlm.nih.gov/articles/PMC4149603/.
+
+21. Raber, M., Liao, Y., Rara, A., Schembre, S. M., Krause, K. J., Strong, L., Daniel-MacDougall, C. and Basen-Engquist, K. *A Systematic Review of the Use of Dietary Self-Monitoring in Behavioral Weight-Loss Interventions: Delivery, Intensity and Effectiveness*. *Public Health Nutrition*, 2021. Available at: https://pubmed.ncbi.nlm.nih.gov/34412727/.

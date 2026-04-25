@@ -1,0 +1,2077 @@
+﻿\documentclass[journal]{new-aiaa}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[version=4]{mhchem}
+\usepackage{siunitx}
+\usepackage{longtable,tabularx}
+\usepackage{url}
+\setlength\LTleft{0pt}  
+
+
+\title{NutriFlow: Intelligent Calorie and Macro Tracking System}
+
+\author{Project Team}
+\affil{Scaler Neovarsity}
+
+\begin{document}
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\begin{titlepage}
+\centering
+\makebox[\textwidth][c]{%
+  \includegraphics[
+    height=1.3cm,
+    trim={80 300 80 0}, % left bottom right top (adjust if needed)
+    % clip
+  ]{assets/Woolf logo.png}
+}
+\par
+\vspace{0.8cm}
+{\Large Applied Software Project Report\par}
+\vspace{1.0cm}
+{\LARGE \textbf{NutriFlow: Intelligent Calorie and Macro Tracking System}\par}
+\vspace{1.0cm}
+{\large By\par}
+\vspace{0.2cm}
+{\Large Soubhik Mazumdar\par}
+\vspace{1.0cm}
+{\large A Master's Project Report submitted to Scaler Neovarsity - Woolf\par}
+{\large in partial fulfillment of the requirements for the degree of\par}
+{\large Master of Science in Computer Science\par}
+\vspace{1.0cm}
+{\large Month of Submission: April 2026\par}
+\vspace{0.8cm}
+\begin{flushleft}
+\textbf{Scaler Mentee Email ID:} mazumdarsoubhik@gmail.com\\
+\textbf{Thesis Supervisor:} Naman Bhalla\\
+\textbf{Date of Submission:} 25/04/2026
+\end{flushleft}
+\vfill
+{\small \textcopyright{} The project report of Soubhik Mazumdar is approved and acceptable in quality and form for electronic publication.\par}
+\end{titlepage}
+
+\clearpage
+\section*{Certification}
+I confirm that I have overseen and reviewed this applied project and, in my judgment, it adheres to the appropriate standards of academic presentation. I believe it satisfactorily meets the criteria, in terms of both quality and breadth, to serve as an applied project report for the attainment of the Master of Science in Computer Science degree. This applied project report has been submitted to Woolf and is deemed sufficient to fulfill the prerequisites for the Master of Science in Computer Science degree.
+
+\vspace{1.2cm}
+\noindent Naman Bhalla\\
+Project Guide / Supervisor
+
+\clearpage
+\section*{Declaration}
+I confirm that this project report, submitted to fulfill the requirements for the Master of Science in Computer Science degree, completed by me from January 2026 to April 2026, is the result of my own individual endeavor. The project has been made on my own under the guidance of my supervisor with proper acknowledgement and without plagiarism. Any contributions from external sources or individuals, including the use of AI tools, are appropriately acknowledged through citation. By making this declaration, I acknowledge that any violation of this statement constitutes academic misconduct. I understand that such misconduct may lead to expulsion from the program and/or disqualification from receiving the degree.
+
+\vspace{1.2cm}
+\noindent Project Team\\
+Candidate\\
+Date: 25 April 2026
+
+\clearpage
+\section*{Acknowledgment}
+I express my sincere gratitude to my family for their constant encouragement and support throughout this journey. I thank the Scaler instructors, mentors, and peers for their guidance, technical feedback, and motivation during the backend specialization program. I am especially grateful to my project supervisor, Naman Bhalla, for valuable direction and review support. Their collective help and inspiration made this project possible and enabled successful completion of the Master's degree requirements.
+
+\clearpage
+\section*{Table of Contents}
+\tableofcontents
+\clearpage
+\listoftables
+\clearpage
+\listoffigures
+\clearpage
+
+\addcontentsline{toc}{section}{Abstract}
+\begin{abstract}
+NutriFlow is a low-friction nutrition tracking system built to address a common product problem: users start calorie tracking but quickly abandon it because meal logging is slow and mentally tiring. The project focuses on fast, natural-language capture with useful daily feedback. Instead of rigid form entry, users can submit meal text such as "2 roti, dal, curd," and the system converts it into structured items with estimated calories, protein, carbohydrates, fat, and fibre. The goal is practical consistency, not clinical precision.
+
+The implemented solution follows a modular loop with three surfaces: meal logging, daily dashboard, and nutrition chat. A FastAPI backend exposes versioned APIs for auth, meal CRUD, history, dashboard aggregation, and chat. A Streamlit frontend provides Today, History, Chat, and Settings views. Data is managed with SQLAlchemy models for users, goals, foods, meals, meal items, daily summaries, and chat messages. SQLite is used for local development with a migration path to PostgreSQL.
+
+The parser combines deterministic normalization and alias-based food resolution, with explicit fallback assumptions for unknown foods or missing quantities. This keeps logging resilient under imperfect input. After each meal mutation, daily summaries are recomputed to provide consumed/target/remaining macro values and streak indicators. Chat responses are concise and context-aware, based on day-level nutrition gaps. By deliberately excluding higher-scope features in this phase, NutriFlow demonstrates an end-to-end backend-centered system that improves adherence through speed, clarity, and repeatable daily workflow.
+\end{abstract}
+
+\section{Project Description}
+
+NutriFlow was conceived as a response to a practical product gap in consumer health applications. Many users understand the value of tracking calorie and macronutrient intake, but most do not maintain the habit for more than a short period. Existing applications often demand high-precision input, extensive search interactions, and too many UI steps per meal. In real-world conditions, especially for working professionals and beginners, these requirements create friction that is stronger than motivation. NutriFlow reframes the problem from "how to maximize nutritional precision" to "how to maximize daily logging consistency while retaining useful guidance." This shift defines the product, the technical architecture, and the implementation priorities documented in this report.
+
+\textit{Figure 1: Project flow and user journey showing the loop from meal logging to parsing, dashboard feedback, chat guidance, and correction actions.}
+
+The central objective of NutriFlow is to make meal logging possible in under a few seconds per entry while still providing meaningful visibility into calories and macros. The system encourages users to log quickly in plain language, then translates those entries into structured nutrition data that can be aggregated over the day. Instead of presenting tracking as a compliance-heavy data entry burden, NutriFlow positions tracking as a lightweight reflection loop: log food, view updated progress, understand remaining targets, and decide the next meal more consciously. This loop is intentionally narrow and repeatable. Features that do not strengthen this loop are deprioritized in the current scope.
+
+The intended users are individuals who want practical nutrition awareness but are not willing to perform detailed food journaling every day. Primary personas include office-going professionals, students, and early-stage fitness users who need direction but not complexity. For these users, the product must satisfy three requirements simultaneously: low effort of use, immediate interpretability of output, and flexibility for imperfect input. NutriFlow addresses each requirement through explicit design choices. It accepts free-form text instead of requiring rigid forms, exposes consumed/target/remaining values to reduce mental calculations, and allows edits/deletes in history so users can correct approximate entries without losing trust in the system.
+
+The project scope is structured around three product surfaces. The first surface is meal logging, which acts as the primary entry point and highest-frequency interaction. In the implemented backend, \texttt{POST /api/v1/meals} receives text, applies parsing logic, computes nutrition totals, stores normalized meal items, and returns a typed response with confidence and totals. The second surface is dashboard feedback, exposed through \texttt{GET /api/v1/dashboard/today}, where daily macro consumption is compared against user-specific targets and converted into actionable "remaining" values. The third surface is contextual guidance through \texttt{POST /api/v1/chat}, where simple assistant responses are generated from day-level macro gaps and user prompts. Together, these surfaces operationalize the product promise: fast input, visible progress, and lightweight guidance.
+
+From a software architecture perspective, NutriFlow is implemented as a modular monolith in FastAPI. This structure was chosen because it offers deployment simplicity while keeping boundaries clear for future decomposition. API modules are separated by concern (\texttt{meals}, \texttt{dashboard}, \texttt{chat}, \texttt{health}). Service modules encapsulate business logic (\texttt{parser}, \texttt{meals}, \texttt{dashboard}, \texttt{food\_reference}, \texttt{users}, \texttt{chat}). Data persistence is modeled through SQLAlchemy entities with explicit relationships and cascade behavior where needed. The core tables in the current implementation are \texttt{users}, \texttt{user\_goals}, \texttt{foods}, \texttt{meals}, \texttt{meal\_items}, \texttt{daily\_summaries}, and \texttt{chat\_messages}. This schema supports both transactional meal workflows and day-level analytical aggregation without introducing unnecessary infrastructure complexity at this stage.
+
+The parsing strategy reflects a deliberate trade-off between robustness and operational cost. Deterministic parsing is used first: text is normalized, split into chunks, quantity tokens are interpreted (numeric and word-based), and alias mappings resolve candidate foods. When quantity is missing, defaults are applied from food metadata; when a food is unknown, fallback assumptions generate editable records with lowered confidence. This approach ensures that user input is rarely rejected, which is critical for habit continuity. Confidence values and assumptions are persisted with each meal item so that uncertainty is not hidden. In practical product terms, the parser prefers "quickly log with transparent approximation" over "fail fast until input is perfect."
+
+The dashboard subsystem is designed as the reinforcement engine of the product. After every meal create, update, or delete operation, daily summaries are recomputed for affected dates. Aggregation computes meal count and macro totals, and then combines those values with user goals to produce macro pairs (\texttt{consumed}, \texttt{target}, \texttt{remaining}). A streak calculation runs backward over daily summaries to quantify consecutive logging days, adding a behavioral signal that supports retention. The frontend renders these outputs as concise metrics rather than dense analytics, keeping the interface legible for users who need immediate interpretation during daily routines.
+
+The chat subsystem is intentionally constrained. It is not positioned as a medical or therapeutic advisor; it provides concise, context-aware suggestions based on logged intake and user prompts. For example, when protein or fibre gaps are present, responses include practical meal suggestions with clear next actions. This design avoids overpromising model intelligence while still adding value at decision points. In both BRD and implementation terms, AI serves as a support layer around the core logging/dashboard loop, not as the center of the product.
+
+The frontend implementation in Streamlit reflects a rapid-delivery strategy focused on validating workflows end to end. The Today tab supports logging and same-day review. The History tab supports date-filtered retrieval, pagination, edit, and delete actions. The Chat tab maintains conversational context and integrates backend responses. The Settings tab allows backend URL configuration and logout handling while authenticated requests use bearer access tokens. This frontend is intentionally pragmatic: it prioritizes functional coverage of backend capabilities and fast iteration over visual complexity.
+
+Non-functional expectations are embedded into technical choices. The API design is synchronous and straightforward, minimizing request overhead for the primary user path. Input validation, typed schemas, and error handling provide predictable client behavior. Dependency injection for database sessions and user identity simplifies endpoint contracts. Seed food references and alias maps reduce time-to-first-log in local environments. The architecture remains deployment-flexible: while local development currently uses SQLite, models and service boundaries are aligned with migration to PostgreSQL and managed infrastructure when scaling requirements increase.
+
+A significant contribution of this project is the alignment between business requirements and backend implementation decisions. The BRD defines low-friction logging, understandable progress, and contextual guidance as core outcomes. The SDD translates these outcomes into modules, data models, and endpoint contracts. The implemented code demonstrates this translation concretely: every major endpoint maps to a user-visible need, every major table maps to a workflow or metric, and every major service function maps to an explicit product behavior. This requirement-to-code traceability is central to the value of the project report.
+
+The project also acknowledges current limitations. Food coverage is finite and regionally variable; macro estimates are approximations, especially for mixed home-cooked dishes; and recommendation logic in chat is intentionally simple. However, these limits are accepted within scope because they preserve the primary objective of fast, consistent use. The system already includes correction paths through meal editing and history management, which is essential for trust in approximate systems. Future enhancements can progressively improve precision and personalization through larger food corpora, selective model-assisted parsing, and more adaptive recommendation modules without disrupting existing flows.
+
+In summary, NutriFlow is a backend-driven applied software project that demonstrates how disciplined scope and practical engineering can improve adherence in a common but high-drop-off health behavior. It does not attempt to solve every nutrition problem at once. Instead, it solves one critical product challenge well: converting meal tracking from a high-friction task into a repeatable daily workflow supported by clear feedback and lightweight intelligence. This focus is what makes the current implementation technically coherent, user-relevant, and extensible for subsequent development phases.
+
+\section{Requirement Gathering}
+
+\textit{Figure 2: Use case diagram showing primary actors and major system interactions across authentication, meal tracking, dashboard, history, chat, and settings.}
+
+Requirement gathering for NutriFlow was carried out with a product-first, backend-grounded approach. The objective was to define requirements that are both meaningful for end users and directly traceable to implementable API, data, and service behavior. Instead of collecting a broad set of speculative features, the process emphasized high-frequency actions that users perform daily and that determine retention outcomes. The project deliberately treated meal logging as a behavioral workflow problem rather than only a data accuracy problem. Therefore, requirement quality was evaluated on two axes at the same time: technical feasibility and expected impact on habit continuity.
+
+The primary input sources for requirement definition were the business problem statement, user personas, implementation constraints, and iterative validation against the running system architecture. The business problem identified the key failure mode in existing nutrition products: users abandon tracking because friction per meal is too high. User personas highlighted the need for speed and low cognitive load, especially for working professionals and beginner users. Technical constraints included limited initial scope, a backend-centered specialization requirement, and the need to ship an end-to-end flow with clear API contracts. As a result, requirements were prioritized only if they supported the core product loop: log quickly, see progress immediately, and receive simple next-step guidance.
+
+In this project, requirement gathering also included explicit exclusion decisions. Many capabilities are common in modern health applications, but not all of them improve early-stage user consistency. Features such as image recognition, barcode scanning, social competition, and clinical-grade recommendations were kept out of scope to preserve delivery speed and architectural clarity. This was not a limitation of imagination but a deliberate product strategy: complete and reliable execution of a narrow loop is preferable to partial execution of a broad feature set. The requirements below reflect this principle by balancing user value, engineering complexity, and measurable behavior outcomes.
+
+The section is structured in three layers. First, functional requirements define what the system must do from a user and API perspective. Second, non-functional requirements define how the system should behave under performance, reliability, maintainability, and usability expectations. Third, requirement-level assumptions and acceptance criteria clarify interpretation boundaries to reduce ambiguity during design and implementation.
+
+\subsection{Functional Requirements}
+
+FR-01 Meal Logging Through Natural Language: The system shall accept free-text meal input from the user and process it without requiring structured manual entry per food item. The user may optionally provide contextual fields such as \texttt{meal\_type} and \texttt{eaten\_at}, but the core action must remain valid with only text input. The system shall parse the input into one or more item-level entries, estimate quantity and unit where possible, compute calories, protein, carbohydrates, fat, and fibre, and persist both original input and normalized records. This requirement maps to the backend flow implemented through \texttt{POST /api/v1/meals}, parsing logic in the meal parser service, and item persistence in the \texttt{meals} and \texttt{meal\_items} tables. The user-facing intent is that logging should remain fast and resilient even when text is imperfect.
+
+FR-02 Quantity and Food Interpretation with Transparent Assumptions: The system shall support mixed input patterns such as numeric quantity ("2 roti"), textual quantity ("one bowl dal"), and unspecified quantity ("curd"). For missing or ambiguous values, the system shall apply deterministic defaults from reference food metadata and store assumptions used for estimation. For unknown foods, the system shall create a fallback item with reduced confidence instead of rejecting the entire meal by default. This requirement is critical for continuity because hard rejection behavior increases abandonment. The implementation expectation is not perfect parsing but reliable conversion with traceable confidence and assumptions, enabling later correction.
+
+FR-03 Reference Food Mapping and Macro Computation: The system shall maintain a canonical food reference with aliases so that common user terms resolve to known foods. Macro values shall be computed from canonical per-serving nutrition multiplied by inferred quantity factors. Alias handling shall support regional and colloquial naming where available. This requirement enables consistency of outputs across repeated logs and reduces dependence on AI inference for basic mapping. In the implemented system, this behavior is supported by seed food records, alias map generation, and parser-to-meal-item transformation logic.
+
+FR-04 Complete Meal Lifecycle Management: The system shall provide full meal lifecycle operations so users can trust and maintain data quality over time. Users shall be able to create meals, update meals, and delete meals, and each operation shall correctly update day-level aggregates. Edits may include source text changes, metadata updates, or item-level replacement. Deletion shall remove meal-linked items through relational cascade behavior and trigger summary recomputation. This requirement prevents drift between logged entries and dashboard output and ensures the product remains usable beyond initial data capture.
+
+FR-05 History Retrieval with Filtering and Pagination: The system shall allow retrieval of past meal entries by date range and pagination controls to support review and correction workflows. The API shall provide total count with page slices to support client-side navigation. This requirement maps to \texttt{GET /api/v1/meals/history} with \texttt{start\_date}, \texttt{end\_date}, \texttt{limit}, and \texttt{offset} parameters. User value comes from auditability: users can revisit previous days, verify estimates, and correct data where needed.
+
+FR-06 Day-Level Dashboard Aggregation: The system shall compute and expose daily nutrition summaries for calories, protein, carbohydrates, fat, and fibre. For each macro, the dashboard response shall include consumed, target, and remaining values. In addition, day-level meal count and streak days shall be included to represent logging consistency. This requirement maps to \texttt{GET /api/v1/dashboard/today} and the summary recomputation service. The product intent is immediate feedback after every logging action, reducing user mental math and reinforcing next-step decisions.
+
+FR-07 User Goal Initialization and Persistence: The system shall maintain per-user macro targets used in dashboard evaluation. If explicit goal data is missing for a user, the system shall initialize defaults to keep the workflow unblocked. Goal values shall be persisted and used consistently in remaining-value calculations. This requirement ensures every dashboard response is contextualized and prevents null-target behavior in new-user flows.
+
+FR-08 Context-Aware Nutrition Chat: The system shall provide a chat endpoint that accepts user questions and responds with concise, practical suggestions informed by day-level nutrition context. The chat layer shall access current summary values and detect major intake gaps (for example, protein or fibre deficit, calorie overshoot) before generating response text. The requirement does not demand advanced personalized medical counseling; it requires lightweight actionable assistance that complements the logging/dashboard loop.
+
+FR-09 Chat and Interaction Record Persistence: The system shall store user and assistant chat messages with role and context day for continuity and future analysis. This enables traceability, future conversational UX improvements, and integration with personalization modules in later phases. Storage must remain tied to user identity to preserve isolation across user sessions.
+
+FR-10 Consistent User Context Across Endpoints: All core endpoints shall operate against a resolved user identity so that meals, summaries, goals, and chat records are correctly partitioned per user. In the current implementation this is provided through bearer-token authentication (\texttt{Authorization: Bearer <access\_token>}) resolved by \texttt{get\_current\_user}/\texttt{get\_user\_id}, with automatic user and goal bootstrap where missing. This requirement is foundational for data integrity.
+
+FR-11 Input Validation and Error Signaling: The system shall validate request payloads and return clear error responses for invalid input, missing entities, and unsupported operations. Example behaviors include \texttt{400} for invalid meal parse/update payloads and \texttt{404} for missing meal IDs on update/delete. This requirement ensures predictable client behavior and improves debuggability during integration and future platform hardening.
+
+FR-12 Frontend Workflow Coverage for Backend Capabilities: The user interface shall expose all critical backend operations required in the primary loop: meal logging, same-day dashboard viewing, history-based edit/delete, and chat interactions. This requirement is satisfied by the Streamlit interface with Today, History, Chat, and Settings tabs. The requirement exists because backend specialization still demands demonstrable end-user flow continuity, not isolated API correctness.
+
+\subsection{Non-Functional Requirements}
+
+NFR-01 Performance and Responsiveness: The primary user action (meal logging) should return quickly enough to preserve interaction momentum. Target behavior is sub-2-second responses in typical local or low-latency deployments for common inputs. Dashboard retrieval should feel near-instant for single-day queries. Performance optimization should prioritize parser and summary paths because they sit on the highest-frequency journey.
+
+NFR-02 Reliability of Core Flows: The system shall remain operational for create/read/update/delete meal operations and day-level summary generation under normal usage conditions. Failures in one request should not corrupt stored data for previous requests. Transactional boundaries around meal write operations and summary recomputation should preserve consistency. Reliability in this context means users can trust that visible dashboard values match stored meal states after each operation.
+
+NFR-03 Data Consistency and Traceability: The system shall preserve both raw input (\texttt{original\_text}) and normalized item outputs so generated nutrition values are explainable. Confidence scores and assumption metadata shall be retained for transparency and future parser improvements. Unique constraints and relational integrity must prevent duplicate or orphan summary records for a given user/day combination.
+
+NFR-04 Usability and Low Cognitive Load: The product shall maintain minimal interaction complexity across core workflows. Users should not need to navigate deep menus or perform extensive manual data entry to log a meal and view progress. Interfaces should prioritize clear labels, concise metrics, and straightforward correction controls. Usability is measured here as completion ease of everyday tasks rather than visual sophistication.
+
+NFR-05 Maintainability and Modularity: Code organization shall support extension and testing by separating concerns across API routing, service logic, schema models, and data models. Business logic should remain concentrated in services rather than endpoint controllers. This requirement reduces future refactor cost and supports incremental features such as improved parsing, richer recommendations, and infrastructure migration.
+
+NFR-06 Scalability Readiness: Even though the current implementation targets local development with SQLite, the design shall remain compatible with migration to production-grade data stores and deployment environments. Data model structure, endpoint contracts, and modular services should permit movement to PostgreSQL, managed caching, and cloud runtime without redesigning the product loop.
+
+NFR-07 Security Baseline: The system shall enforce user-scoped data access at the application level and validate all incoming payloads. Sensitive runtime configuration shall be externalized through environment variables. The current implementation includes token-based authentication with token expiry and revocation support, and remains compatible with further hardening such as stronger secret management and rate limiting.
+
+NFR-08 Cost-Aware Intelligence: AI-assisted behavior should remain lightweight and context-driven, avoiding high-cost model invocation patterns for simple deterministic tasks. Parsing and mapping should prefer deterministic methods first, with AI kept as supplementary support logic where needed. This requirement ensures the architecture remains economically viable as request volume grows.
+
+NFR-09 Observability and Error Visibility: The system should expose enough runtime information to diagnose failures and performance bottlenecks in key flows. At minimum, endpoint-level errors should be surfaced clearly to clients, and server-side logging should support issue tracing for parser behavior, summary recomputation, and chat generation paths.
+
+NFR-10 Testability and Verification: Critical business functions should be testable in isolation, especially parser behavior, macro aggregation, and endpoint contracts. Integration tests should verify that meal CRUD actions correctly propagate to dashboard outputs. Requirement verification should include both software correctness and user-flow correctness to match product goals.
+
+Requirement Assumptions and Constraints: The current requirement set assumes non-clinical usage, where macro values are indicative rather than medically prescriptive. It assumes users can provide simple text meal descriptions and are willing to correct occasional estimation errors. It also assumes backend-first development priority with pragmatic UI support rather than polished production UX in this phase. Infrastructure assumptions include local-first development with future migration pathways.
+
+Acceptance Orientation for This Phase: A requirement in this phase is considered satisfied when the related flow is demonstrable end to end through the implemented frontend and API stack, returns predictable responses, preserves user-scoped data integrity, and updates dashboard context correctly after meal mutations. Accuracy is evaluated as practical usefulness for daily decisions, not laboratory precision.
+
+Overall, the requirement gathering output defines NutriFlow as a focused, behavior-oriented nutrition system. The functional requirements ensure the product can capture, structure, aggregate, and explain daily intake. The non-functional requirements ensure that these capabilities remain fast, reliable, understandable, and extensible. Together they establish a coherent baseline for the next report sections on architecture, database design, and feature implementation detail.
+
+\section{System Architecture}
+
+\textit{Figure 3: High-level component architecture showing user interaction through Streamlit frontend, FastAPI backend modules, service layer, data store, and external LLM connectors.}
+
+\textit{Figure 4: Meal logging sequence from user input through parsing, food resolution, persistence, summary recomputation, and dashboard refresh response.}
+
+NutriFlow is implemented as a backend-centered, modular monolith architecture designed for low-friction feature delivery, clear service boundaries, and straightforward evolution to production infrastructure. The architecture was selected to support the core product loop at high reliability: natural-language meal logging, daily macro aggregation, and contextual nutrition guidance. Instead of prematurely splitting the system into multiple distributed services, the project keeps domain responsibilities separated inside a single FastAPI application and a single relational database. This allows strong transaction consistency for meal operations while preserving maintainability through explicit module boundaries.
+
+At a high level, the architecture consists of five layers: presentation layer, API orchestration layer, domain service layer, persistence layer, and operational configuration layer. The presentation layer is a Streamlit client that captures user intent and renders dashboards, history, and chat. The API layer exposes versioned HTTP endpoints and handles validation, dependency resolution, and error translation. The domain service layer performs parsing, food mapping, macro computation, summary recomputation, and chat response generation. The persistence layer stores users, goals, foods, meals, meal items, summaries, and chat messages using SQLAlchemy models. The operational layer handles runtime configuration and initialization concerns such as database bootstrap, environment variables, and health checks.
+
+\subsection{Architectural Goals and Constraints}
+
+The architecture was shaped by four product goals and three implementation constraints.
+
+Product goals:
+
+\begin{enumerate}
+\item Minimize logging friction by accepting unstructured meal input.
+\item Provide immediate and readable feedback after each logging action.
+\item Preserve user trust by allowing correction and history review.
+\item Keep assistance contextual, short, and operationally affordable.
+\end{enumerate}
+
+Implementation constraints:
+
+\begin{enumerate}
+\item Backend specialization focus with explicit API and service depth.
+\item End-to-end demonstrability with a practical client, not just isolated APIs.
+\item Scope discipline to avoid feature sprawl in early versions.
+\end{enumerate}
+
+These constraints favor a modular monolith. A microservice architecture would increase operational complexity through service discovery, network-level retries, distributed tracing, and multi-service deployment coordination, without adding meaningful value at current scale. A tightly coupled script-style architecture, on the other hand, would reduce maintainability and make requirement-to-code traceability weak. The selected architecture intentionally sits between these extremes.
+
+\subsection{System Context and External Interfaces}
+
+NutriFlow currently operates as a single-process runtime with user scoping enforced at the API dependency layer. The frontend communicates with the backend over HTTP and sends \texttt{Authorization: Bearer <access\_token>} for protected routes. The backend exposes a stable API prefix (\texttt{/api/v1}) and routes requests to feature modules. The database is accessed through SQLAlchemy session dependency injection. In local mode, SQLite is used; the architecture remains portable to PostgreSQL by design since model definitions and query patterns are database-agnostic for primary operations.
+
+External interface types are:
+
+\begin{enumerate}
+\item Human-to-system input: free-text meals, dashboard day selection, chat prompts, and history filters.
+\item Client-to-server API calls: REST requests using JSON payloads.
+\item Server-to-database calls: ORM-based select/insert/update/delete and aggregation queries.
+\item Operational interface: health endpoint and application startup initialization.
+\end{enumerate}
+
+The frontend is deliberately thin in business logic. It delegates all core calculations and parsing decisions to the backend, ensuring single-source truth for behavior and reducing client inconsistency risks.
+
+\subsection{Logical Component Architecture}
+
+The backend component structure is organized by responsibility:
+
+\begin{enumerate}
+\item \texttt{app.main}: application composition root. Creates FastAPI app, registers API router, and initializes database metadata at startup.
+\item \texttt{app.api.v1.router}: endpoint aggregation layer. Mounts \texttt{health}, \texttt{meals}, \texttt{dashboard}, and \texttt{chat} routers.
+\item Endpoint modules (\texttt{endpoints/*.py}): request orchestration layer. Resolve dependencies, invoke services, and map domain exceptions to HTTP responses.
+\item Service modules (\texttt{services/*.py}): domain logic layer. Contains parser, meal workflows, dashboard aggregation, user bootstrap, food reference mapping, and chat response construction.
+\item Schema modules (\texttt{schemas/*.py}): contract layer. Pydantic request/response models define payload shape, validation, and serialization behavior.
+\item Model modules (\texttt{db/models/*.py}): persistence structure. SQLAlchemy entities define tables, constraints, and relationships.
+\item Core modules (\texttt{core/*.py}): cross-cutting runtime concerns. Configuration and database session setup live here.
+\end{enumerate}
+
+This decomposition makes behavior discoverable and testable. Endpoint handlers remain thin and deterministic, while business invariants are centralized in services. This is important for report traceability because requirements can be mapped from user story to endpoint to service to database writes.
+
+\subsection{Request Lifecycle Architecture}
+
+A typical request flow follows this sequence:
+
+\begin{enumerate}
+\item Frontend action triggers \texttt{BackendClient} request with JSON body and bearer token header for protected routes.
+\item FastAPI router matches route and validates payload against Pydantic schema.
+\item Dependency injection resolves database session and user identifier.
+\item Endpoint ensures user and goal records exist (\texttt{ensure\_user\_and\_goal}).
+\item Endpoint delegates to domain service.
+\item Service executes business logic and database interactions.
+\item Endpoint returns typed response or HTTP error if raised.
+\item Frontend updates UI state based on response and optionally re-renders.
+\end{enumerate}
+
+This lifecycle is consistent across meals, dashboard, and chat. Uniformity lowers cognitive load for future development and reduces variation in error handling behavior.
+
+\subsection{Meal Logging Pipeline Architecture}
+
+Meal logging is the most important architectural path. It has the highest frequency and directly affects user retention.
+
+The flow for \texttt{POST /api/v1/meals} is:
+
+\begin{enumerate}
+\item Validate request (\texttt{text} required, optional \texttt{meal\_type}, optional \texttt{eaten\_at}).
+\item Ensure seed food references exist for first-run database state.
+\item Build alias map from canonical foods and aliases.
+\item Parse meal text into chunks.
+\item Infer quantities using numeric and lexical tokens.
+\item Resolve food matches using exact alias map and fallback partial match.
+\item Compute item-level macros from food defaults and quantity factors.
+\item Apply unknown-item fallback when food is not resolved.
+\item Persist meal record and associated item records.
+\item Recompute daily summary for the affected day.
+\item Return meal with totals and parse confidence.
+\end{enumerate}
+
+This pipeline combines deterministic parsing with controlled fallbacks. Unknown foods are not hard failures by default; instead, they are stored with transparent assumptions and lower confidence. This architecture supports the product requirement of preserving flow continuity under imperfect user input. It also enables future enhancements because assumptions are persisted per item and can be used to improve mappings or suggest corrections later.
+
+The parser architecture itself has three stages:
+
+\begin{enumerate}
+\item Normalization stage: trim, lowercase, collapse whitespace, split on delimiters such as comma and "and".
+\item Interpretation stage: extract quantity token and body phrase, normalize quantity from either numeric string or known words.
+\item Resolution stage: map phrase to food reference, calculate nutrition values, assign confidence and assumptions.
+\end{enumerate}
+
+The parser returns a \texttt{ParsedMeal} aggregate with item list and average confidence. This design keeps parsing side-effect free until service orchestration persists results.
+
+\subsection{Meal Mutation and Consistency Model}
+
+Update and delete workflows are architected with consistency as a first-class requirement.
+
+For update (\texttt{PATCH /api/v1/meals/\{meal\_id\}}):
+
+\begin{enumerate}
+\item Resolve meal by \texttt{meal\_id} and \texttt{user\_id}.
+\item Track old day for summary recomputation.
+\item Apply metadata updates (\texttt{meal\_type}, \texttt{eaten\_at}) if present.
+\item If \texttt{text} is provided, re-run parse pipeline and replace all items.
+\item If manual items are provided, validate canonical names, map to foods, and replace all items.
+\item Commit transaction.
+\item Recompute summaries for old day and new day (if date changed).
+\item Return updated meal aggregate.
+\end{enumerate}
+
+For delete (\texttt{DELETE /api/v1/meals/\{meal\_id\}}):
+
+\begin{enumerate}
+\item Resolve meal by \texttt{meal\_id} and \texttt{user\_id}.
+\item Capture affected day.
+\item Delete meal (with cascade delete for child items).
+\item Commit transaction.
+\item Recompute summary for affected day.
+\end{enumerate}
+
+This model prevents stale dashboard values after mutation. Recomputing summaries post-commit ensures the analytical view remains aligned with transactional writes. The architecture trades small extra query cost for stronger correctness, which is acceptable at current scale and aligns with user trust priorities.
+
+\subsection{Dashboard Aggregation Architecture}
+
+The dashboard subsystem provides the reinforcement loop for user behavior. Its architecture is intentionally deterministic and query-efficient.
+
+Core functions:
+
+\begin{enumerate}
+\item \texttt{recompute\_daily\_summary}: aggregate meals and items for user/day into materialized \texttt{daily\_summaries} row.
+\item \texttt{get\_streak\_days}: scan backward from day until no-meal summary found.
+\item \texttt{get\_today\_dashboard}: combine consumed totals with user goals into macro pairs.
+\end{enumerate}
+
+Aggregation query design:
+
+\begin{enumerate}
+\item Join \texttt{meals} with \texttt{meal\_items}.
+\item Filter by user and day boundaries (\texttt{time.min} to \texttt{time.max}).
+\item Use SQL aggregates for meal count and macro sums.
+\item Upsert-like behavior on daily summary entity.
+\end{enumerate}
+
+Response model architecture exposes a normalized contract (\texttt{MacroPair}) for each macro with \texttt{consumed}, \texttt{target}, and \texttt{remaining}. This keeps frontend rendering simple and consistent, and it decouples display logic from storage schema.
+
+Materializing daily summaries is an architectural decision that improves read performance and simplifies streak computation. Instead of recomputing historical days every time, the system updates one day per mutation, then reads directly. This is a suitable middle ground between pure on-the-fly aggregation and complex event-driven projection infrastructure.
+
+\subsection{Chat Guidance Architecture}
+
+Chat is built as a context-enriched response service rather than a full conversational AI platform. The architecture focuses on utility, cost control, and predictability.
+
+Flow for \texttt{POST /api/v1/chat}:
+
+\begin{enumerate}
+\item Validate prompt and optional context day.
+\item Resolve user context and ensure user/goal records.
+\item Fetch dashboard summary for context day.
+\item Build response text using macro gap heuristics and prompt intent signals.
+\item Persist user and assistant messages.
+\item Return response and context day.
+\end{enumerate}
+
+The response engine uses deterministic rules:
+
+\begin{enumerate}
+\item Detect nutrient deficits or calorie overshoot.
+\item Format a short status line.
+\item Add suggestion template based on prompt keywords.
+\item Append behavior cue encouraging continued logging.
+\end{enumerate}
+
+This architecture deliberately avoids heavy model orchestration for everyday replies. It is extensible: a future personalization or model-inference layer can replace \texttt{\_build\_response} without changing API contracts, database schema, or frontend interaction structure.
+
+\subsection{Data Layer and Entity Relationship Architecture}
+
+Persistence uses SQLAlchemy declarative models with explicit relations:
+
+\begin{enumerate}
+\item \texttt{users} as root identity entity.
+\item \texttt{user\_goals} one-to-one target profile.
+\item \texttt{foods} canonical nutrition reference.
+\item \texttt{meals} parent record for each log entry.
+\item \texttt{meal\_items} child rows for normalized meal components.
+\item \texttt{daily\_summaries} one row per user/day aggregate.
+\item \texttt{chat\_messages} chronological chat history.
+\end{enumerate}
+
+Key relationship design:
+
+\begin{enumerate}
+\item \texttt{users} to \texttt{meals} is one-to-many with cascade delete.
+\item \texttt{meals} to \texttt{meal\_items} is one-to-many with delete-orphan semantics.
+\item \texttt{foods} to \texttt{meal\_items} is optional many-to-one (\texttt{SET NULL} on food delete).
+\item \texttt{users} to \texttt{daily\_summaries} is one-to-many with unique constraint on (\texttt{user\_id}, \texttt{day}).
+\item \texttt{users} to \texttt{chat\_messages} is one-to-many.
+\end{enumerate}
+
+This model supports both transactional and analytical operations without duplication of source-of-truth entities. Raw text is stored in meals for auditability and parser reprocessing; itemized data enables macro rollups and future feature extensions.
+
+\subsection{API Contract Architecture}
+
+API contract design follows versioned REST patterns with explicit schemas:
+
+\begin{enumerate}
+\item \texttt{POST /api/v1/meals}
+\item \texttt{PATCH /api/v1/meals/\{meal\_id\}}
+\item \texttt{DELETE /api/v1/meals/\{meal\_id\}}
+\item \texttt{GET /api/v1/meals/history}
+\item \texttt{GET /api/v1/dashboard/today}
+\item \texttt{POST /api/v1/chat}
+\item \texttt{GET /api/v1/health}
+\end{enumerate}
+
+Schema architecture principles:
+
+\begin{enumerate}
+\item Input constraints prevent malformed payloads (length, optionality, numeric ranges).
+\item Output models are strongly typed and domain-aligned.
+\item Validation errors are surfaced early at boundary.
+\item Endpoint responses are predictable for UI consumption.
+\end{enumerate}
+
+Error architecture:
+
+\begin{enumerate}
+\item Domain \texttt{ValueError} is mapped to \texttt{400}.
+\item Missing meal references map to \texttt{404}.
+\item Network or transport errors are handled client-side in \texttt{ApiError}.
+\end{enumerate}
+
+This contract architecture provides clean separation between transport concerns and domain concerns. It also stabilizes integration as frontend and backend evolve independently.
+
+\subsection{Frontend Integration Architecture}
+
+The Streamlit client is organized around view modules and a small API client wrapper.
+
+Frontend components:
+
+\begin{enumerate}
+\item \texttt{app.py} as shell and tab composition.
+\item \texttt{client.py} as request abstraction with status validation.
+\item \texttt{state.py} for session defaults and error state.
+\item \texttt{ui\_today.py} for logging and dashboard.
+\item \texttt{ui\_history.py} for filtered history and CRUD actions.
+\item \texttt{ui\_chat.py} for conversational interaction.
+\item \texttt{ui\_settings.py} for backend URL and user ID control.
+\end{enumerate}
+
+Architectural rationale:
+
+\begin{enumerate}
+\item Keep business logic server-side.
+\item Keep UI state explicit and session-scoped.
+\item Provide consistent error feedback patterns.
+\item Avoid duplicate macro calculations in frontend.
+\end{enumerate}
+
+This architecture makes frontend a thin orchestration and visualization layer. It allows quick iteration and keeps behavioral correctness concentrated in backend services where requirements are enforced.
+
+\subsection{Cross-Cutting Concerns}
+
+Configuration architecture:
+
+\begin{enumerate}
+\item \texttt{Settings} dataclass reads environment variables for app name, API prefix, and database URL.
+\item Database engine is initialized once with SQLite-specific connection args when needed.
+\item Session lifecycle is handled per request via dependency generator.
+\end{enumerate}
+
+Initialization architecture:
+
+\begin{enumerate}
+\item Application startup triggers \texttt{init\_db}.
+\item All mapped tables are created from metadata.
+\item Seed food data is inserted lazily on first meal path.
+\end{enumerate}
+
+User context architecture:
+
+\begin{enumerate}
+\item \texttt{get\_token} extracts bearer credentials and \texttt{get\_current\_user} validates token state.
+\item \texttt{get\_user\_id} derives identity from the authenticated user object.
+\item \texttt{ensure\_user\_and\_goal} guarantees user graph exists before business action.
+\end{enumerate}
+
+Health and operations:
+
+\begin{enumerate}
+\item Root endpoint confirms service availability.
+\item Health endpoint returns simple status for orchestration and monitoring.
+\end{enumerate}
+
+These cross-cutting choices keep local developer setup minimal and align with the project goal of demonstrating complete backend functionality without heavy infrastructure prerequisites.
+
+\subsection{Quality Attributes and Trade-Off Analysis}
+
+Performance:
+
+\begin{enumerate}
+\item Deterministic parser path avoids expensive inference overhead for common logs.
+\item Daily summary materialization avoids repeated deep aggregations for dashboard views.
+\item Remaining bottlenecks are bounded to meal write and summary recompute path.
+\end{enumerate}
+
+Reliability:
+
+\begin{enumerate}
+\item Transactional commits ensure writes are atomic per operation.
+\item Summary recompute on every mutation favors correctness over minimal compute.
+\item Clear error mappings make failure modes predictable.
+\end{enumerate}
+
+Scalability:
+
+\begin{enumerate}
+\item Current monolith supports moderate scale with vertical resources.
+\item Service boundaries already prepared for future extraction if needed.
+\item Database portability enables migration from SQLite to PostgreSQL.
+\end{enumerate}
+
+Maintainability:
+
+\begin{enumerate}
+\item Layered separation improves readability and unit-test potential.
+\item Typed schemas reduce integration ambiguity.
+\item Domain logic centralization prevents endpoint-level duplication.
+\end{enumerate}
+
+Security posture:
+
+\begin{enumerate}
+\item Protected routes enforce bearer-token auth with expiry and revocation checks.
+\item Configuration externalization supports secure secret handling in production.
+\item Validation and bounded payload lengths reduce abuse vectors.
+\end{enumerate}
+
+The architecture consciously optimizes for product momentum and behavior-loop integrity rather than distributed-system sophistication. This is appropriate for the current phase and aligns with requirement priorities.
+
+\subsection{Extensibility Architecture}
+
+The current design keeps extension points explicit:
+
+\begin{enumerate}
+\item Parser extension: plug improved alias resolution, fuzzy matching, or model-assisted parsing.
+\item Recommendation extension: replace deterministic chat builder with policy/model layers.
+\item Data extension: add weekly summaries or trend tables without changing core meal schema.
+\item API extension: add goal management endpoints while preserving existing contracts.
+\item Infra extension: introduce Redis caching for alias maps and hot dashboard reads.
+\end{enumerate}
+
+Future intelligent modules can be introduced behind service interfaces first, and only split into separate deployable services when scale justifies network and orchestration complexity.
+
+\subsection{End-to-End Architectural Narrative}
+
+A representative user journey demonstrates architectural cohesion:
+
+\begin{enumerate}
+\item User logs "2 roti, dal, curd" in Today tab.
+\item Frontend posts payload to meals endpoint.
+\item Backend validates, resolves user, parses items, computes macros, stores records.
+\item Backend recomputes daily summary and returns meal output.
+\item Frontend refreshes dashboard and displays updated remaining macros.
+\item User edits a meal in History tab; backend replaces items and recomputes both affected day summaries.
+\item User asks chat for dinner suggestion; backend reads day context and returns concise guidance.
+\end{enumerate}
+
+Every step in this journey is serviced by a dedicated module with explicit contracts. There are no hidden side channels or duplicated calculations across layers. That architectural consistency is the key strength of the current system.
+
+\subsection{Architectural Conclusion}
+
+NutriFlow's system architecture is intentionally focused, modular, and requirement-driven. The modular monolith approach delivers a strong balance of speed, correctness, and clarity for a backend specialization project. By keeping parsing, aggregation, and guidance logic in well-scoped services, and by enforcing typed API contracts over a stable data model, the system achieves end-to-end coherence for the product's central behavior loop. The architecture is production-aware without being over-engineered, and it is extensible enough to support future enhancements such as richer food intelligence, personalized recommendations, stronger authentication, and cloud-scale deployment patterns.
+
+\section{Database Design}
+
+\textit{Figure 5: Brief ER diagram showing core entities and key relationships used for authentication, meal logging, aggregation, and chat context.}
+
+The NutriFlow database is designed to support a behavior-first nutrition tracking workflow where fast meal capture, transparent estimation, daily aggregation, and correction-friendly history are all first-class requirements. The schema intentionally balances transactional integrity with analytical readability. Instead of building separate operational and warehouse databases at this stage, the design uses a single relational schema that can serve both CRUD-heavy logging operations and day-level dashboard summarization. This is appropriate for the project scope because it keeps consistency high, reduces orchestration complexity, and preserves end-to-end traceability between user input and computed nutrition outputs.
+
+From an implementation standpoint, the current system uses SQLAlchemy declarative models and defaults to SQLite for local execution. However, entity structure, constraints, and query patterns are intentionally portable to PostgreSQL for production deployment. The schema is normalized around a clear domain model: users own goals, meals, summaries, and chat messages; meals contain itemized food entries; food reference data provides canonical nutrient values and alias mapping. This model directly reflects product requirements: log quickly, compute macros consistently, view daily progress, and correct entries when needed.
+
+\subsection{Data Design Principles}
+
+The database architecture is guided by the following principles:
+
+\begin{enumerate}
+\item Preserve source and interpretation together: raw user meal text must be stored alongside parsed item rows so estimates are explainable and editable.
+\item Separate reference and event data: canonical foods are maintained independently from user meal events to avoid duplication and simplify mapping updates.
+\item Keep user context explicit: every mutable user-generated record is keyed by \texttt{user\_id} to enforce logical tenancy.
+\item Materialize frequent aggregates: day-level summaries are stored to speed dashboard reads and simplify streak computation.
+\item Support correction workflows: schema and relationships must allow update/delete operations to safely propagate to aggregates.
+\item Prioritize deterministic integrity: foreign keys, uniqueness constraints, and cascade policies enforce consistency without requiring complex application-side reconciliation.
+\end{enumerate}
+
+\subsection{Logical Data Model Overview}
+
+The schema consists of seven core tables:
+
+\begin{enumerate}
+\item \texttt{users}
+\item \texttt{user\_goals}
+\item \texttt{foods}
+\item \texttt{meals}
+\item \texttt{meal\_items}
+\item \texttt{daily\_summaries}
+\item \texttt{chat\_messages}
+\end{enumerate}
+
+The design pattern is a mixed master-reference and event model:
+
+\begin{enumerate}
+\item Master entities: \texttt{users}, \texttt{user\_goals}, \texttt{foods}
+\item Event entities: \texttt{meals}, \texttt{meal\_items}, \texttt{chat\_messages}
+\item Derived/materialized entity: \texttt{daily\_summaries}
+\end{enumerate}
+
+This split is deliberate. Master entities change slowly and define context. Event entities capture user actions over time. Derived entity accelerates high-frequency read paths (dashboard and streak).
+
+\subsection{Table Specification and Rationale}
+
+\subsubsection{1. \texttt{users}}
+
+Purpose: root identity anchor for all user-scoped data.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (String(36), primary key): UUID-like identifier used as cross-table reference.
+\item \texttt{email} (String(255), unique, nullable): optional contact field for future identity expansion.
+\item \texttt{created\_at} (DateTime): audit timestamp.
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item Even in local mode using token-authenticated user resolution, storing a concrete user entity preserves relational integrity.
+\item Keeping \texttt{email} nullable allows frictionless local testing and phased onboarding implementation.
+\item This table acts as the parent for goals, meals, summaries, and chat messages.
+\end{enumerate}
+
+Relationship role:
+
+\begin{enumerate}
+\item One-to-many with \texttt{meals}.
+\item One-to-many with \texttt{daily\_summaries}.
+\item One-to-many with \texttt{chat\_messages}.
+\item One-to-one logical with \texttt{user\_goals} (enforced by unique key on \texttt{user\_goals.user\_id}).
+\end{enumerate}
+
+\subsubsection{2. \texttt{user\_goals}}
+
+Purpose: store per-user nutrition targets used for dashboard comparisons.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (String(36), primary key)
+\item \texttt{user\_id} (String(36), foreign key to \texttt{users.id}, unique, non-null)
+\item \texttt{calories\_target} (Float, default 2000)
+\item \texttt{protein\_target} (Float, default 120)
+\item \texttt{carbs\_target} (Float, default 250)
+\item \texttt{fat\_target} (Float, default 60)
+\item \texttt{fibre\_target} (Float, default 30)
+\item \texttt{updated\_at} (DateTime)
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item Goals are decoupled from user profile to support future goal history/versioning if needed.
+\item Unique \texttt{user\_id} enforces one active goal profile per user in current scope.
+\item Defaults allow immediate usability for first-time users and prevent null-target dashboards.
+\end{enumerate}
+
+Design note:
+
+\begin{enumerate}
+\item The service layer bootstraps goals via \texttt{ensure\_user\_and\_goal}, ensuring summary generation is never blocked by missing targets.
+\end{enumerate}
+
+\subsubsection{3. \texttt{foods}}
+
+Purpose: canonical nutrition reference and alias resolution base.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (int, primary key, autoincrement)
+\item \texttt{canonical\_name} (String(120), unique, non-null)
+\item \texttt{aliases\_csv} (String(500), non-null, default empty)
+\item \texttt{default\_quantity} (Float, non-null)
+\item \texttt{default\_unit} (String(40), non-null)
+\item Per-serving nutrition fields: \texttt{calories\_per\_serving}, \texttt{protein\_per\_serving}, \texttt{carbs\_per\_serving}, \texttt{fat\_per\_serving}, \texttt{fibre\_per\_serving} (Float)
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item Keeps nutritional reference independent from user events for reuse and consistency.
+\item \texttt{canonical\_name} uniqueness prevents duplicate base foods.
+\item Alias storage supports colloquial/variant food terms during parsing.
+\item Default quantity/unit support graceful handling of missing user quantities.
+\end{enumerate}
+
+Trade-off:
+
+\begin{enumerate}
+\item Aliases are currently stored as CSV for implementation simplicity.
+\item For larger scale, alias normalization into separate \texttt{food\_aliases} table could improve query flexibility and data governance.
+\end{enumerate}
+
+\subsubsection{4. \texttt{meals}}
+
+Purpose: represent a single meal logging event by a user.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (String(36), primary key)
+\item \texttt{user\_id} (String(36), foreign key to \texttt{users.id}, indexed)
+\item \texttt{original\_text} (Text, non-null)
+\item \texttt{meal\_type} (String(40), nullable)
+\item \texttt{eaten\_at} (DateTime, non-null)
+\item \texttt{parse\_confidence} (Float, non-null)
+\item \texttt{created\_at} and \texttt{updated\_at} (DateTime)
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item \texttt{original\_text} preserves user-provided source for auditability and reprocessing.
+\item \texttt{parse\_confidence} stores aggregate quality signal from parser output.
+\item \texttt{eaten\_at} decouples meal time from creation time, enabling historical entry and correct day-level aggregation.
+\item \texttt{meal\_type} is nullable to avoid forcing user classification in low-friction flows.
+\end{enumerate}
+
+Relationship behavior:
+
+\begin{enumerate}
+\item Parent of \texttt{meal\_items} with cascade delete-orphan.
+\item Belongs to \texttt{users} with cascade on user delete.
+\end{enumerate}
+
+\subsubsection{5. \texttt{meal\_items}}
+
+Purpose: normalized food-item components generated from meal parsing or manual item updates.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (String(36), primary key)
+\item \texttt{meal\_id} (String(36), foreign key to \texttt{meals.id}, indexed)
+\item \texttt{food\_id} (nullable foreign key to \texttt{foods.id}, \texttt{SET NULL} on delete)
+\item \texttt{raw\_label} (String(160), non-null)
+\item \texttt{canonical\_name} (String(120), non-null)
+\item \texttt{quantity} (Float, non-null)
+\item \texttt{unit} (String(40), non-null)
+\item Computed nutrition fields: \texttt{calories}, \texttt{protein}, \texttt{carbs}, \texttt{fat}, \texttt{fibre} (Float)
+\item \texttt{confidence} (Float, non-null)
+\item \texttt{assumptions} (JSON, non-null, default dict)
+\item \texttt{created\_at} (DateTime)
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item Item-level granularity enables detailed totals and correction-friendly workflows.
+\item \texttt{food\_id} nullable design allows unknown-food fallbacks while preserving a valid item row.
+\item \texttt{assumptions} JSON captures parser decisions (for example defaulted quantity or unknown mapping), supporting transparency and future model improvement.
+\item Nutrition values are denormalized into row fields for fast aggregation and historical consistency, even if reference food values change later.
+\end{enumerate}
+
+Important design choice:
+
+\begin{enumerate}
+\item \texttt{canonical\_name} is stored even when \texttt{food\_id} exists, creating a stable display field and reducing join dependency in read-heavy paths.
+\end{enumerate}
+
+\subsubsection{6. \texttt{daily\_summaries}}
+
+Purpose: materialized per-user, per-day macro totals and meal count.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (String(36), primary key)
+\item \texttt{user\_id} (String(36), foreign key to \texttt{users.id}, indexed)
+\item \texttt{day} (Date, non-null)
+\item Consumed totals: \texttt{calories\_consumed}, \texttt{protein\_consumed}, \texttt{carbs\_consumed}, \texttt{fat\_consumed}, \texttt{fibre\_consumed} (Float)
+\item \texttt{meal\_count} (Integer, non-null)
+\item \texttt{updated\_at} (DateTime)
+\end{enumerate}
+
+Constraint:
+
+\begin{enumerate}
+\item UniqueConstraint on (\texttt{user\_id}, \texttt{day}) ensures exactly one summary row per user/day.
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item Dashboard is a frequent read; pre-aggregated daily data prevents repeated heavy joins.
+\item Streak computation becomes straightforward by checking consecutive summary rows with meal\_count > 0.
+\item Summary rows are recomputed after meal create/update/delete, ensuring deterministic consistency.
+\end{enumerate}
+
+\subsubsection{7. \texttt{chat\_messages}}
+
+Purpose: persist conversational context and assistant outputs for each user.
+
+Key fields:
+
+\begin{enumerate}
+\item \texttt{id} (String(36), primary key)
+\item \texttt{user\_id} (String(36), foreign key to \texttt{users.id}, indexed)
+\item \texttt{role} (String(20), non-null)
+\item \texttt{content} (Text, non-null)
+\item \texttt{context\_day} (Date, nullable)
+\item \texttt{created\_at} (DateTime)
+\end{enumerate}
+
+Rationale:
+
+\begin{enumerate}
+\item Maintains interaction history and supports future personalization or analytics.
+\item \texttt{context\_day} links responses to nutritional context used by the assistant.
+\item Separate storage for chat avoids polluting meal tables with conversational metadata.
+\end{enumerate}
+
+\subsection{Relationship and Cardinality Design}
+
+Primary cardinalities:
+
+\begin{enumerate}
+\item \texttt{users} 1:N \texttt{meals}
+\item \texttt{users} 1:N \texttt{daily\_summaries}
+\item \texttt{users} 1:N \texttt{chat\_messages}
+\item \texttt{users} 1:1 \texttt{user\_goals} (logical one-to-one)
+\item \texttt{meals} 1:N \texttt{meal\_items}
+\item \texttt{foods} 1:N \texttt{meal\_items} (optional link)
+\end{enumerate}
+
+Why this structure works:
+
+\begin{enumerate}
+\item User ownership remains explicit at top-level event entities.
+\item Meal decomposition supports both raw and normalized views.
+\item Optional food reference link allows resilient parsing under uncertainty.
+\item Daily summary table decouples aggregate reads from event volume.
+\end{enumerate}
+
+Cascade policy decisions:
+
+\begin{enumerate}
+\item Deleting user cascades to meals, summaries, goals, and chat for clean tenant removal.
+\item Deleting meal cascades to meal\_items (no orphaned items).
+\item Deleting food sets \texttt{meal\_items.food\_id} to null, preserving historical nutrition records.
+\end{enumerate}
+
+This cascade strategy protects history fidelity while maintaining referential integrity.
+
+\subsection{Integrity Constraints and Validation Alignment}
+
+Database-level controls:
+
+\begin{enumerate}
+\item Primary keys on all tables.
+\item Foreign keys for relationship integrity.
+\item Unique constraints on \texttt{foods.canonical\_name}, \texttt{users.email}, \texttt{user\_goals.user\_id}, and (\texttt{daily\_summaries.user\_id}, \texttt{day}).
+\item Non-null constraints on essential operational fields.
+\end{enumerate}
+
+Application-level validation complements database constraints:
+
+\begin{enumerate}
+\item Pydantic enforces meal text length and manual item quantity > 0.
+\item Empty manual item list is rejected at schema layer.
+\item Endpoint/service logic maps invalid operations to clear HTTP errors.
+\end{enumerate}
+
+The combined approach avoids overloading either layer. Database ensures structural truth; application ensures domain-meaningful inputs.
+
+\subsection{Indexing and Query Path Considerations}
+
+Current explicit indexes exist on high-frequency foreign key fields:
+
+\begin{enumerate}
+\item \texttt{meals.user\_id}
+\item \texttt{meal\_items.meal\_id}
+\item \texttt{daily\_summaries.user\_id}
+\item \texttt{chat\_messages.user\_id}
+\end{enumerate}
+
+These align with dominant query shapes:
+
+\begin{enumerate}
+\item Fetch user meals in date ranges for history.
+\item Join meal items by meal for totals and details.
+\item Fetch/update summary by user and day.
+\item Load user chat history in future expansions.
+\end{enumerate}
+
+Additional optimization candidates for production:
+
+\begin{enumerate}
+\item Composite index on \texttt{meals(user\_id, eaten\_at)} for history and day filters.
+\item Composite index on \texttt{daily\_summaries(user\_id, day)} to complement uniqueness constraint access path.
+\item Optional index on \texttt{meal\_items(food\_id)} if analytical reporting by food is added.
+\end{enumerate}
+
+At current scale, the existing schema is adequate; future indexing should be driven by measured query plans and latency metrics.
+
+\subsection{Aggregation Strategy and Consistency Guarantees}
+
+A central design choice is materializing daily summaries instead of computing dashboard metrics directly from raw events on every read. The recomputation function executes after meal mutations and writes authoritative totals to \texttt{daily\_summaries}.
+
+Benefits:
+
+\begin{enumerate}
+\item Predictable dashboard performance.
+\item Simplified streak logic.
+\item Lower read-path complexity in API layer.
+\end{enumerate}
+
+Consistency model:
+
+\begin{enumerate}
+\item Meal mutation commits first.
+\item Summary recomputation runs for affected day(s).
+\item Dashboard reads from recomputed summary and goals.
+\end{enumerate}
+
+For date changes during updates, both old and new day summaries are recomputed, preventing ghost counts and stale totals. This explicit two-day reconciliation is critical to correctness.
+
+\subsection{Data Lifecycle and State Transitions}
+
+\subsubsection{Meal creation lifecycle}
+
+\begin{enumerate}
+\item User submits text.
+\item Parser returns itemized representation.
+\item Meal row inserted.
+\item Item rows inserted.
+\item Summary recomputed.
+\item Response returns meal + totals.
+\end{enumerate}
+
+\subsubsection{Meal update lifecycle}
+
+\begin{enumerate}
+\item Meal located by \texttt{meal\_id + user\_id}.
+\item Existing items removed.
+\item New parsed/manual items inserted.
+\item If \texttt{eaten\_at} changes date, old and new summaries recomputed.
+\item Updated meal returned.
+\end{enumerate}
+
+\subsubsection{Meal deletion lifecycle}
+
+\begin{enumerate}
+\item Meal located by \texttt{meal\_id + user\_id}.
+\item Meal deleted with cascading items.
+\item Affected day summary recomputed.
+\end{enumerate}
+
+This lifecycle-driven schema behavior ensures derived data never drifts far from event source data.
+
+\subsection{Normalization and Controlled Denormalization}
+
+Normalized aspects:
+
+\begin{enumerate}
+\item User identity and goals separated.
+\item Food reference separated from event data.
+\item Meal and meal\_items split to represent 1:N composition.
+\end{enumerate}
+
+Denormalized aspects:
+
+\begin{enumerate}
+\item Nutrition values stored directly in \texttt{meal\_items}.
+\item Daily totals stored in \texttt{daily\_summaries}.
+\item Canonical name copied into meal\_items.
+\end{enumerate}
+
+Why denormalization is acceptable:
+
+\begin{enumerate}
+\item Read patterns are aggregate-heavy.
+\item Historical accuracy should remain tied to time-of-entry values.
+\item Product needs fast feedback over strict storage minimization.
+\end{enumerate}
+
+The design is a practical OLTP-plus-light-analytics hybrid appropriate for the application stage.
+
+\subsection{Handling Uncertainty and Approximation in Schema}
+
+Nutrition estimation is inherently approximate, especially for home-cooked and mixed meals. The schema explicitly models uncertainty rather than hiding it.
+
+Mechanisms:
+
+\begin{enumerate}
+\item \texttt{parse\_confidence} at meal level.
+\item \texttt{confidence} at meal-item level.
+\item \texttt{assumptions} JSON to record defaulting/fallback decisions.
+\item Optional \texttt{food\_id} for unknown mappings.
+\end{enumerate}
+
+This is an important design strength. It preserves explainability and supports user trust because future UI or reports can communicate estimate confidence and parsing assumptions.
+
+\subsection{Multi-User Isolation and Access Patterns}
+
+The schema is single-database, multi-user by key partitioning. Every user-generated event row carries \texttt{user\_id}, and service queries scope by that key. This enforces logical isolation at query level and aligns with bearer-token authenticated access.
+
+Practical implications:
+
+\begin{enumerate}
+\item One user's meal IDs are not visible or mutable by another user when proper scoping is applied.
+\item Summaries are computed per user-day boundary.
+\item Chat context remains user-specific.
+\end{enumerate}
+
+For production hardening, row-level security or strict auth token claims can reinforce this application-level partitioning.
+
+\subsection{Auditability and Traceability}
+
+Database design supports auditability through:
+
+\begin{enumerate}
+\item Timestamps (\texttt{created\_at}, \texttt{updated\_at}) on key entities.
+\item Raw input retention (\texttt{meals.original\_text}).
+\item Parsed output retention (\texttt{meal\_items.*}).
+\item Assumption metadata storage (\texttt{meal\_items.assumptions}).
+\item Chat record persistence (\texttt{chat\_messages}).
+\end{enumerate}
+
+This traceability is useful for debugging parser behavior, explaining dashboard totals, and demonstrating requirement-to-data linkage in project evaluation.
+
+\subsection{Portability and Migration Readiness}
+
+Although local runtime uses SQLite, design choices anticipate migration:
+
+\begin{enumerate}
+\item UUID-like string keys already portable.
+\item SQLAlchemy abstractions avoid engine-specific SQL in core paths.
+\item Table relationships and constraints map cleanly to PostgreSQL.
+\item JSON column usage in meal assumptions is compatible with richer JSON querying in PostgreSQL.
+\end{enumerate}
+
+Migration strategy recommendation:
+
+\begin{enumerate}
+\item Introduce Alembic for controlled schema versioning.
+\item Add production indexes after observing actual load.
+\item Promote environment-based DB URL and connection pooling.
+\item Run data integrity checks during cutover.
+\end{enumerate}
+
+The current schema is stable enough to serve as baseline for this transition.
+
+\subsection{Risks, Limitations, and Improvement Opportunities}
+
+Known limitations:
+
+\begin{enumerate}
+\item \texttt{aliases\_csv} in a single column can become difficult to manage at scale.
+\item Float nutrition values can introduce minor rounding artifacts; decimal types may be considered for stricter accounting.
+\item No soft-delete strategy is currently used; hard deletes simplify logic but reduce recovery options.
+\item Goal history is not versioned; only current targets are retained.
+\end{enumerate}
+
+Improvement opportunities:
+
+\begin{enumerate}
+\item Add \texttt{food\_aliases} table for normalized alias management.
+\item Add weekly/monthly summary tables for longer-period analytics.
+\item Add goal history snapshots to improve retrospective reporting.
+\item Introduce background recomputation queue if mutation volume increases substantially.
+\end{enumerate}
+
+These improvements can be introduced incrementally without redesigning the core relational model.
+
+\subsection{Database Design Conclusion}
+
+The NutriFlow database design is purpose-built for a low-friction nutrition tracking product where transactional correctness, fast daily feedback, and transparent approximation are all required simultaneously. The schema organizes domain data into clear entities with explicit relationships, enforces integrity through keys and constraints, and accelerates common read paths through materialized day summaries. It supports full meal lifecycle operations, preserves auditability from raw input to parsed output, and remains extensible for future personalization and scale. Most importantly, the design reflects the project's core philosophy: prioritize consistent daily use through practical, explainable, and maintainable data architecture.
+
+\section{Feature Development}
+
+Feature development in NutriFlow was carried out as an iterative backend-first process where each user-facing capability was built as a complete vertical slice: API contract, domain service logic, persistence updates, and frontend integration. This approach ensured that every feature could be demonstrated end to end and validated against real user interaction patterns rather than only unit-level behavior. Because the project objective is low-friction daily nutrition tracking, feature prioritization focused on the shortest path from user intent to meaningful feedback. As a result, development concentrated on six high-impact feature groups: meal logging, parsing and normalization, meal history management, dashboard aggregation, contextual chat guidance, and integrated frontend flows.
+
+The implementation follows a modular monolith style in FastAPI with explicit service modules. This structure allowed parallel progress on feature domains without fragmenting runtime operations. Each feature implementation was designed around three constraints: low interaction cost for the user, deterministic behavior for predictable outputs, and correction paths for approximate nutrition estimates. These constraints shaped both core logic and UX behavior throughout development.
+
+\subsection{Development Strategy and Vertical Slice Execution}
+
+The project was not built as a sequence of isolated backend utilities. Instead, feature development followed vertical slices:
+
+\begin{enumerate}
+\item Define API request and response schema.
+\item Implement core business logic in a service module.
+\item Persist domain state changes in SQLAlchemy models.
+\item Expose endpoint with dependency wiring and error mapping.
+\item Integrate client call in Streamlit frontend.
+\item Validate full flow through manual interaction and response checks.
+\end{enumerate}
+
+This strategy was selected because product value emerges from full loops, not isolated methods. For example, meal logging is only complete when user text becomes parsed items, macro totals are persisted, summary values are updated, and the frontend reflects the change immediately. Implementing features in complete slices reduced integration surprises and ensured traceability from requirement to behavior.
+
+\subsection{Foundation Features: App Composition, Routing, and Configuration}
+
+Before domain features, foundational work established a stable execution surface:
+
+\begin{enumerate}
+\item FastAPI app creation in \texttt{app.main}.
+\item API version prefix and router composition in \texttt{api/v1/router.py}.
+\item Database engine/session setup in \texttt{core/database.py}.
+\item Runtime settings via environment-backed dataclass in \texttt{core/config.py}.
+\item Health and root endpoints for service checks.
+\end{enumerate}
+
+Although foundational, this layer directly supports feature reliability. Versioned routing ensures new endpoints can be added without contract instability. Centralized database session dependency ensures consistent transaction management across all features. Startup database initialization (\texttt{init\_db}) removes manual setup friction in local environments, which is especially useful when quickly iterating on feature logic.
+
+\subsection{User Context Bootstrap Feature}
+
+NutriFlow currently uses a pragmatic user-context strategy built for fast development and repeatable demos:
+
+\begin{enumerate}
+\item User identity is established by login/register and bearer token issuance.
+\item Protected routes use \texttt{get\_token} + \texttt{get\_current\_user}; \texttt{get\_user\_id} is derived from authenticated context.
+\item \texttt{ensure\_user\_and\_goal} ensures both \texttt{User} and \texttt{UserGoal} records exist before feature execution.
+\end{enumerate}
+
+This pattern is a feature enabler, not only a technical shortcut. It guarantees that first-time interactions never fail due to missing profile setup. It also keeps all downstream features (meal logging, dashboard, chat) consistently user-scoped. The bootstrap behavior reduces edge-case branching inside domain services and allows feature logic to assume a valid user-goal graph.
+
+\subsection{Core Feature 1: Natural-Language Meal Logging}
+
+Meal logging is the primary product feature and receives the deepest implementation investment. The user submits free-text meal content, optionally with meal type and eaten timestamp. The backend transforms this into normalized item records and nutrition totals.
+
+\subsubsection{API and Schema Design}
+
+Endpoint: \texttt{POST /api/v1/meals}
+
+Input model (\texttt{MealCreateRequest}):
+
+\begin{enumerate}
+\item \texttt{text} required, length-limited.
+\item \texttt{meal\_type} optional.
+\item \texttt{eaten\_at} optional.
+\end{enumerate}
+
+Output model (\texttt{MealOut}):
+
+\begin{enumerate}
+\item Meal identity and metadata.
+\item Parse confidence.
+\item Itemized rows.
+\item Totals across calories/protein/carbs/fat/fibre.
+\end{enumerate}
+
+This schema design intentionally returns both summary and detail, enabling the frontend to render immediate high-level feedback while still exposing item-level interpretation for user trust.
+
+\subsubsection{Service Flow}
+
+\texttt{create\_meal} executes these steps:
+
+\begin{enumerate}
+\item Ensure food reference seeds exist.
+\item Build alias map from \texttt{foods}.
+\item Parse text with \texttt{parse\_meal\_text}.
+\item Reject if no items could be produced.
+\item Create meal row with raw text and parse confidence.
+\item Insert child meal items derived from parser output.
+\item Commit transaction.
+\item Reload meal and recompute daily summary for affected day.
+\item Return meal with computed totals.
+\end{enumerate}
+
+Key development decision: parsing is performed before persistence, and summary recomputation is triggered after commit. This ordering preserves consistent state and avoids stale aggregate reads.
+
+\subsubsection{UX Integration}
+
+In \texttt{ui\_today.py}, meal logging is implemented via a Streamlit form:
+
+\begin{enumerate}
+\item Text area for natural-language input.
+\item Optional meal type.
+\item Optional date/time controls.
+\item Submit action with error display.
+\end{enumerate}
+
+On success, the UI reruns to fetch updated dashboard and day meals. This gives users near-immediate feedback, which is critical to reinforcing logging behavior.
+
+\subsection{Core Feature 2: Parsing and Normalization Engine}
+
+The parser is the engine that makes free-text logging possible. It is deterministic, explainable, and resilient against imperfect input.
+
+\subsubsection{Parsing Pipeline}
+
+Implemented in \texttt{services/parser.py}:
+
+\begin{enumerate}
+\item Normalize and split input into chunks (\texttt{\_split\_chunks}).
+\item Extract quantity token and body phrase via regex.
+\item Resolve quantity using numeric parse and word map (\texttt{one}, \texttt{two}, etc.).
+\item Attempt exact alias-map match.
+\item Attempt simple containment fallback match.
+\item If unresolved, create unknown fallback item with lower confidence and assumptions.
+\item If resolved, compute macro values by scaling food per-serving values with quantity.
+\item Default quantity when missing; record assumption.
+\item Return list of \texttt{ParsedItem} and average confidence (\texttt{ParsedMeal}).
+\end{enumerate}
+
+\subsubsection{Confidence and Assumption Modeling}
+
+Two details significantly improve feature quality:
+
+\begin{enumerate}
+\item Confidence scoring:
+a. High confidence for direct matches with explicit quantity. b. Lower confidence for defaulted quantity or unknown fallback.
+
+\item Assumption recording:
+a. Captures defaulted quantity. b. Captures unknown food fallback reason.
+
+\end{enumerate}
+
+This data is persisted in \texttt{meal\_items.assumptions} and \texttt{confidence} fields. It supports future explainability and potential UI surfacing of uncertain interpretations.
+
+\subsubsection{Why Deterministic Parsing First}
+
+The project deliberately avoids immediate heavy model-based parsing in base flow. Deterministic parsing gives:
+
+\begin{enumerate}
+\item Fast response time.
+\item Predictable output behavior.
+\item Easier debugging.
+\item Lower operational cost.
+\end{enumerate}
+
+For current scope, this trade-off is correct because the product goal is habit consistency, not maximal linguistic coverage.
+
+\subsection{Core Feature 3: Food Reference Seeding and Alias Mapping}
+
+NutriFlow includes a built-in food reference module (\texttt{food\_reference.py}) that seeds essential foods and provides alias lookup maps.
+
+\subsubsection{Seed Strategy}
+
+\texttt{ensure\_seed\_foods} inserts default foods only when the table is empty. This allows:
+
+\begin{enumerate}
+\item Zero manual setup for first run.
+\item Stable baseline parsing behavior.
+\item Easy extension with additional foods in later phases.
+\end{enumerate}
+
+\subsubsection{Alias Map Construction}
+
+\texttt{get\_food\_alias\_map} builds a dictionary that maps both canonical names and aliases to \texttt{Food} objects.
+
+Benefits:
+
+\begin{enumerate}
+\item O(1)-style lookup behavior for common entries.
+\item Simple support for regional or colloquial naming.
+\item Decoupling between user wording and canonical nutrition values.
+\end{enumerate}
+
+This feature is small in code size but foundational in user experience, because alias matching directly reduces input rejection and manual correction burden.
+
+\subsection{Core Feature 4: Meal Update Workflow}
+
+Approximate systems need correction paths. Meal update was therefore treated as a first-class feature rather than an afterthought.
+
+Endpoint: \texttt{PATCH /api/v1/meals/\{meal\_id\}}
+
+Supported update modes:
+
+\begin{enumerate}
+\item Metadata update (\texttt{meal\_type}, \texttt{eaten\_at}).
+\item Full text reparse (\texttt{text} provided).
+\item Manual item replacement (\texttt{items} provided).
+\end{enumerate}
+
+\subsubsection{Implementation Details}
+
+In \texttt{update\_meal}:
+
+\begin{enumerate}
+\item Meal is resolved by \texttt{meal\_id + user\_id}; missing meal returns \texttt{None}.
+\item Old day is captured to handle date-shift recomputation.
+\item Text updates trigger parser rerun and complete replacement of existing items.
+\item Manual item updates map canonical names to foods and generate parsed-equivalent item rows.
+\item Existing items are removed before replacement to prevent stale totals.
+\item Transaction commits.
+\item Summaries recomputed for both old and new day.
+\end{enumerate}
+
+\subsubsection{Design Trade-Off}
+
+Current update design replaces all meal items rather than performing partial item diffs. This keeps logic simple and deterministic, reducing mutation edge cases in early phase. As scale grows, partial-diff updates can be introduced if performance profiling demands it.
+
+\subsubsection{Frontend Integration}
+
+Both Today and History tabs offer inline edit forms. This duplicated placement is intentional:
+
+\begin{enumerate}
+\item Users can quickly correct recent logs in same context.
+\item Users can correct historical entries via date-filtered history.
+\end{enumerate}
+
+The form posts changes to backend and reruns view on success, preserving a simple mental model.
+
+\subsection{Core Feature 5: Meal Deletion Workflow}
+
+Deletion is implemented through \texttt{DELETE /api/v1/meals/\{meal\_id\}} and returns \texttt{204} on success.
+
+Implementation flow:
+
+\begin{enumerate}
+\item Resolve meal by user scope.
+\item Capture affected day.
+\item Delete meal row; item rows cascade-delete.
+\item Commit and recompute affected summary.
+\item Return no content.
+\end{enumerate}
+
+Key reliability behavior:
+
+\begin{enumerate}
+\item Missing meal returns \texttt{404}.
+\item Frontend handles \texttt{404} as already removed and refreshes view.
+\end{enumerate}
+
+This prevents confusing UX states when concurrent operations or stale UI references occur.
+
+\subsection{Core Feature 6: Meal History Retrieval with Filters and Pagination}
+
+History is a key feature for trust, auditability, and corrections.
+
+Endpoint: \texttt{GET /api/v1/meals/history}
+
+Parameters:
+
+\begin{enumerate}
+\item \texttt{start\_date} optional.
+\item \texttt{end\_date} optional.
+\item \texttt{limit} with range guard.
+\item \texttt{offset} with non-negative guard.
+\end{enumerate}
+
+Response:
+
+\begin{enumerate}
+\item \texttt{items} list of simplified meal entries.
+\item \texttt{total} total count for navigation.
+\end{enumerate}
+
+\subsubsection{Query Design}
+
+\texttt{get\_meal\_history} composes a SQLAlchemy query scoped by user and optional date boundaries. It calculates total count via subquery and retrieves ordered page slices by \texttt{eaten\_at desc}.
+
+Why this design matters:
+
+\begin{enumerate}
+\item Supports responsive browsing in growing data volume.
+\item Prevents loading all records into memory.
+\item Enables deterministic pagination behavior in client.
+\end{enumerate}
+
+\subsubsection{UI Behavior}
+
+History tab includes:
+
+\begin{enumerate}
+\item Start/end date filters.
+\item Limit control.
+\item Next/Previous navigation.
+\item Inline edit/delete actions.
+\end{enumerate}
+
+This turns history from passive display into an active data quality management surface.
+
+\subsection{Core Feature 7: Dashboard Aggregation and Macro Progress Visualization}
+
+Dashboard feature converts logged events into daily actionable insight.
+
+Endpoint: \texttt{GET /api/v1/dashboard/today}
+
+Input:
+
+\begin{enumerate}
+\item Optional \texttt{day}, defaults to current date.
+\end{enumerate}
+
+Output (\texttt{DashboardTodayResponse}):
+
+\begin{enumerate}
+\item Day.
+\item Macro pairs for calories, protein, carbs, fat, fibre.
+\item Meal count.
+\item Streak days.
+\end{enumerate}
+
+\subsubsection{Aggregation Engine}
+
+Implemented in \texttt{services/dashboard.py}:
+
+\begin{enumerate}
+\item \texttt{recompute\_daily\_summary} aggregates meal/item rows for a day.
+\item Summary row is inserted or updated.
+\item Goal row is ensured if absent.
+\item \texttt{get\_streak\_days} scans backward daily summaries until break.
+\item \texttt{get\_today\_dashboard} returns normalized macro pair structure.
+\end{enumerate}
+
+\subsubsection{Feature Quality Considerations}
+
+\begin{enumerate}
+\item Remaining value can be negative for overshoot, which is informative and preserved.
+\item Dashboard always returns complete macro structure, reducing client branching.
+\item Meal mutation hooks force summary recomputation, ensuring near-real-time consistency.
+\end{enumerate}
+
+\subsubsection{Frontend Rendering}
+
+Today tab renders five metric cards with consumed and remaining/target context. It also displays meal count and streak in caption format.
+
+This design intentionally favors quick readability over visual density. The goal is immediate interpretation for daily decision-making.
+
+\subsection{Core Feature 8: Streak Calculation as Habit Reinforcement Signal}
+
+Streak is a small but important behavioral feature.
+
+Logic:
+
+\begin{enumerate}
+\item Start from selected day.
+\item Check if summary exists and meal\_count > 0.
+\item If yes, increment streak and move one day back.
+\item Stop at first day without logs.
+\end{enumerate}
+
+Why implemented this way:
+
+\begin{enumerate}
+\item Uses already materialized summary table.
+\item Avoids expensive event-level scans each request.
+\item Keeps mental model straightforward for users.
+\end{enumerate}
+
+Streak is not gamification-heavy in current scope; it acts as a gentle continuity signal tied to actual logging behavior.
+
+\subsection{Core Feature 9: Contextual Nutrition Chat}
+
+Chat feature provides simple suggestion support based on current intake context.
+
+Endpoint: \texttt{POST /api/v1/chat}
+
+Input:
+
+\begin{enumerate}
+\item \texttt{message} required.
+\item \texttt{context\_day} optional.
+\end{enumerate}
+
+Output:
+
+\begin{enumerate}
+\item \texttt{response}.
+\item \texttt{context\_day}.
+\end{enumerate}
+
+\subsubsection{Service Logic}
+
+In \texttt{create\_chat\_reply}:
+
+\begin{enumerate}
+\item Resolve context day.
+\item Fetch dashboard for that day.
+\item Build response using \texttt{\_build\_response}.
+\item Persist user and assistant messages.
+\item Commit and return response.
+\end{enumerate}
+
+\texttt{\_build\_response} checks:
+
+\begin{enumerate}
+\item Protein gap.
+\item Fibre gap.
+\item Calorie overshoot.
+\item Prompt keywords (for example "dinner" or "eat") for suggestion style.
+\end{enumerate}
+
+This keeps responses grounded in user data and avoids purely generic outputs.
+
+\subsubsection{Chat Design Boundaries}
+
+The feature intentionally avoids medical claims and advanced diagnosis. It is framed as practical meal guidance. This boundary is important both for scope control and safe product positioning.
+
+\subsubsection{Frontend Integration}
+
+Chat tab provides:
+
+\begin{enumerate}
+\item Context day picker.
+\item Scrollable chat history from session state.
+\item Chat input with spinner feedback.
+\item Clear chat action.
+\end{enumerate}
+
+Backend-persisted chat messages provide durable records even though current UI session history is client-managed for immediate display.
+
+\subsection{Core Feature 10: Unified Error Handling and Client Robustness}
+
+Feature development included explicit error pathways across server and client.
+
+Backend patterns:
+
+\begin{enumerate}
+\item Domain errors from services become \texttt{HTTPException} with appropriate status.
+\item Missing resources return \texttt{404}.
+\item Validation errors are automatically surfaced by FastAPI/Pydantic.
+\end{enumerate}
+
+Frontend patterns:
+
+\begin{enumerate}
+\item \texttt{BackendClient} centralizes request logic.
+\item Non-expected status codes are converted to \texttt{ApiError}.
+\item Last error is stored in session state and displayed consistently.
+\item Known \texttt{404} edit/delete cases trigger graceful refresh messaging.
+\end{enumerate}
+
+Why this matters:
+
+\begin{enumerate}
+\item User trust depends on predictable failure behavior.
+\item Debugging speed improves when errors are normalized.
+\item Feature-level code remains cleaner because transport concerns are centralized.
+\end{enumerate}
+
+\subsection{Core Feature 11: Frontend Modularization for Maintainable Delivery}
+
+Although backend-focused, the frontend was developed as modular components to support clean feature mapping.
+
+Module roles:
+
+\begin{enumerate}
+\item \texttt{app.py}: app shell, tab orchestration, top-level error display.
+\item \texttt{client.py}: API abstraction and transport concerns.
+\item \texttt{state.py}: session initialization and shared state helpers.
+\item \texttt{ui\_today.py}: log + dashboard + same-day meal edits.
+\item \texttt{ui\_history.py}: filters + pagination + historical edits.
+\item \texttt{ui\_chat.py}: conversational interface.
+\item \texttt{ui\_settings.py}: backend URL and user identity settings.
+\end{enumerate}
+
+This decomposition mirrors backend domain split and accelerates iterative feature changes without creating monolithic UI logic.
+
+\subsection{Optimization Work Done During Feature Development}
+
+Feature development included practical optimization decisions aligned with project scale.
+
+\begin{enumerate}
+\item Deterministic parser-first strategy avoids expensive inference for common inputs.
+\item Alias map built from seeded foods reduces repeated fuzzy operations.
+\item Daily summaries materialized instead of full re-aggregation on every dashboard read.
+\item Pagination in history prevents oversized payloads.
+\item Reusable API client avoids duplicated network and error code.
+\item Typed schemas reduce runtime ambiguity and rework.
+\end{enumerate}
+
+These optimizations are targeted and low complexity, fitting the project's maintainability goals.
+
+\subsection{Data Integrity Behaviors Built into Features}
+
+Across features, several integrity patterns were implemented:
+
+\begin{enumerate}
+\item User scoping enforced in meal CRUD queries.
+\item Cascade deletion of meal\_items with meal delete.
+\item Unique user-day summary row maintained through table constraint + update flow.
+\item Dual-day recomputation on meal date edits prevents summary drift.
+\item Goal auto-provisioning avoids null-target calculations.
+\end{enumerate}
+
+These are not separate infrastructure features; they are embedded inside domain workflows to preserve consistency in normal use.
+
+\subsection{Developer Experience Features}
+
+Feature development also included choices improving reproducibility and local iteration:
+
+\begin{enumerate}
+\item Startup auto-creation of tables.
+\item Seed food auto-initialization on demand.
+\item Health endpoint for quick runtime check.
+\item Default local backend URL and demo user in frontend state.
+\item Simple run commands in backend/frontend README files.
+\end{enumerate}
+
+These choices reduce setup friction and make it easier to validate feature behavior repeatedly.
+
+\subsection{Feature Validation Approach}
+
+Formal automated test suites are not yet the dominant mechanism in the current project phase, so feature validation was driven through scenario-based manual verification using the Streamlit client and endpoint behavior checks.
+
+Key validation scenarios:
+
+\begin{enumerate}
+\item Log a meal with explicit quantities and verify totals.
+\item Log a meal with missing quantities and verify defaults + confidence behavior.
+\item Log unknown food and verify fallback item generation.
+\item Edit meal text and verify item replacement + summary update.
+\item Edit meal date and verify old/new day recomputation.
+\item Delete meal and verify summary decrement.
+\item Filter history across date range and navigate pages.
+\item Query dashboard for chosen day and verify macro pair consistency.
+\item Ask chat guidance and verify context-sensitive response.
+\item Trigger validation errors (empty text, invalid ranges) and verify clear messages.
+\end{enumerate}
+
+This validation style ensures features are tested as users actually experience them.
+
+\subsection{Feature-Level Trade-Offs and Why They Were Chosen}
+
+During development, several design choices were made consciously:
+
+\begin{enumerate}
+\item CSV alias storage vs normalized alias table:
+a. Chosen CSV for speed of implementation. b. Acceptable at current scope; normalization can come later.
+
+\item Full meal-item replacement on updates vs partial patching:
+a. Chosen replacement for deterministic behavior and simpler logic. b. Reduces mutation complexity and inconsistency risk.
+
+\item Recompute summary on each mutation vs incremental delta updates:
+a. Chosen recompute for correctness clarity. b. Acceptable performance at current scale.
+
+\item Token-based auth with persistent bearer sessions:
+a. Chosen to keep user isolation explicit across all protected endpoints. b. Supports production hardening through expiry/revocation and stricter claims policies.
+
+\item Deterministic chat response builder vs LLM-heavy orchestration:
+a. Chosen for cost/predictability. b. Extensible to richer recommendation engines later.
+
+\end{enumerate}
+
+These trade-offs show a consistent pattern: optimize for correctness, clarity, and shipping complete workflow value in the current phase.
+
+\subsection{Feature Development Outcomes}
+
+By the end of current development, NutriFlow delivers the complete MVP capability set required for a backend specialization project:
+
+\begin{enumerate}
+\item Natural-language meal logging with parser-backed normalization.
+\item Persistent macro computation with item-level transparency.
+\item Full meal lifecycle management (create, read, update, delete).
+\item Day-level dashboard with macro targets, remaining values, and streaks.
+\item Contextual nutrition chat grounded in user day summary.
+\item Usable frontend surface that exercises all core backend features.
+\end{enumerate}
+
+The product experience achieved by this feature set is coherent: users can move from meal entry to insight to action without leaving the system or performing complex manual steps.
+
+\subsection{Gaps and Planned Feature Enhancements}
+
+Feature development intentionally leaves room for next-phase expansion. The most relevant enhancements are:
+
+\begin{enumerate}
+\item Expanded food corpus and richer alias coverage for higher parse accuracy.
+\item Optional LLM-assisted parser fallback for ambiguous text only.
+\item Dedicated goal management APIs and UI controls.
+\item Better confidence visualization and assumption explanation in frontend.
+\item Weekly/monthly trend features and longitudinal insights.
+\item Strong authentication and authorization layer.
+\item Production-ready observability and rate limiting.
+\item Optional caching layer for hot reference/summary reads.
+\end{enumerate}
+
+Each enhancement can be added without major re-architecture because current feature modules already separate concerns cleanly.
+
+\subsection{End-to-End Feature Walkthrough Example}
+
+A representative flow demonstrates how developed features work together:
+
+\begin{enumerate}
+\item User opens Today tab and enters: "2 roti, dal, curd".
+\item Frontend posts to meal creation endpoint with bearer token credentials.
+\item Backend ensures user + goals, seeds foods if needed, parses text, stores meal/items, recomputes summary.
+\item API responds with parsed items, totals, and confidence.
+\item UI reruns and fetches dashboard for selected day.
+\item User sees consumed/remaining macro cards and updated meal list.
+\item User edits one meal entry in History tab for correction.
+\item Backend reparses/replaces items and recomputes affected day summaries.
+\item UI reflects corrected totals.
+\item User asks chat: "What should I eat for dinner?"
+\item Backend reads day gaps and responds with concise suggestion.
+\item Chat messages are stored for traceability.
+\end{enumerate}
+
+This sequence illustrates that feature development achieved functional completeness of the product loop, not just independent API availability.
+
+\subsection{Engineering Lessons from Feature Development}
+
+Several lessons emerged during implementation:
+
+\begin{enumerate}
+\item For behavior-driven products, correction features are as important as creation features.
+\item Storing assumptions and confidence dramatically improves transparency in approximate systems.
+\item Materialized daily summaries simplify both performance and product logic.
+\item Thin endpoints + rich services improve maintainability and testability.
+\item Simple deterministic logic often delivers better early-stage product reliability than complex AI-heavy pipelines.
+\item Frontend integration should happen early; many backend edge cases emerge only in full-flow usage.
+\end{enumerate}
+
+These lessons can guide the next iterations and also inform similar backend-centric product implementations.
+
+\subsection{Module-by-Module Implementation Notes}
+
+To provide additional implementation clarity, this subsection summarizes feature-level responsibility distribution across concrete files and why each separation was valuable during development.
+
+\begin{enumerate}
+\item \texttt{backend/app/services/meals.py}: This is the operational center of meal lifecycle features. It owns creation, update, delete, and history retrieval logic. Keeping these workflows together made it easier to enforce consistent summary recomputation behavior and shared helper usage (\texttt{\_parsed\_to\_item}, \texttt{\_items\_totals}). It also reduced duplication between create and update paths, especially around parser integration and totals conversion.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{backend/app/services/parser.py}: Parser concerns were intentionally isolated from persistence concerns. This made it possible to reason about parsing outcomes as pure data (\texttt{ParsedItem}, \texttt{ParsedMeal}) before any database write. During iteration, this separation accelerated parser refinements because changes did not require query-level rewrites.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{backend/app/services/dashboard.py}: Aggregation and streak logic were centralized in one module so all features consuming daily metrics shared one source of truth. This prevented mismatched computations between dashboard endpoint and chat context generation. It also ensured meal mutation handlers could call one stable recomputation function.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{backend/app/services/chat.py}: Chat response generation was isolated so contextual guidance could evolve independently of meal/dashboard contracts. This was useful when refining suggestion phrasing and gap interpretation rules. The module boundaries allow replacing rule-based generation with richer model-backed logic later without touching API endpoint signatures.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{backend/app/api/v1/endpoints/*.py}: Endpoint modules remain intentionally thin. Their job is dependency resolution, request-to-service delegation, and HTTP error mapping. This pattern improved readability during debugging, because transport errors and domain errors remained clearly separated.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{frontend/client.py}: A dedicated client abstraction removed repetitive request code across tabs and normalized error processing. This was important during feature growth because all tabs inherited consistent behavior for timeouts, status handling, and payload serialization.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{frontend/ui\_today.py}, \texttt{frontend/ui\_history.py}, \texttt{frontend/ui\_chat.py}: Splitting UI by feature domain allowed faster iteration cycles. For example, history pagination improvements did not risk regressions in chat rendering, and dashboard metric card changes did not affect history filtering logic.
+\end{enumerate}
+
+\begin{enumerate}
+\item \texttt{backend/app/schemas/*.py}: Typed schemas played a major role in feature stability. Field constraints caught invalid inputs early, and explicit response models reduced accidental contract drift while evolving service code.
+\end{enumerate}
+
+This module-level decomposition is one reason the project could expand feature depth without architectural rewrites. Each feature remained locally understandable while still participating in shared workflows such as user bootstrap, summary consistency, and standardized error propagation.
+
+\subsection{Conclusion of Feature Development}
+
+Feature development in NutriFlow successfully transformed a scoped set of business requirements into a working, integrated application where users can log meals naturally, understand day-level nutritional status, correct historical records, and receive context-aware guidance. The implementation emphasizes practical usability and deterministic consistency while preserving extension points for future intelligence and scale. By building features as complete vertical slices and grounding them in explicit service/database contracts, the project achieved a coherent and defensible architecture-to-product alignment suitable for both academic reporting and real-world evolution.
+
+\section{Technologies Used}
+
+NutriFlow is built with a practical, backend-first stack chosen for fast implementation, maintainability, and production migration readiness.
+
+\subsection{Backend and API Layer}
+
+\begin{enumerate}
+\item FastAPI (Python): FastAPI is the core web framework used to expose versioned REST endpoints for authentication, meals, dashboard, and chat. It provides high development speed, automatic OpenAPI documentation, and strong request/response validation through typed schemas.
+Real-life usage: Startups and internal platforms often use FastAPI to ship data-driven APIs quickly while preserving code quality and clear contracts. Example applications: recommendation APIs, analytics backends, IoT control APIs, internal enterprise microservices.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Uvicorn (ASGI server): Uvicorn runs the FastAPI app in local and production environments with efficient asynchronous request handling.
+Real-life usage: commonly used as the runtime server for modern Python API deployments behind Nginx or load balancers. Example applications: high-concurrency webhook handlers and API gateways.
+
+\end{enumerate}
+
+\subsection{Data and Persistence Layer}
+
+\begin{enumerate}
+\item SQLAlchemy 2.x (ORM): SQLAlchemy is used for relational modeling, entity relationships, and query composition. It allows the codebase to remain portable across SQLite (development) and PostgreSQL/MySQL-compatible relational systems in production.
+Real-life usage: teams use SQLAlchemy to enforce clean data models, FK relationships, and transaction-safe operations in business-critical systems. Example applications: fintech ledgers, healthcare record backends, SaaS tenant databases.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item SQLite (development) and PostgreSQL/RDS-ready design (production): SQLite keeps local setup lightweight for rapid iteration, while the schema and service patterns are designed to migrate cleanly to production-grade managed databases.
+Real-life usage: local prototyping with SQLite followed by cloud-hosted relational DB adoption for scale and concurrency. Example applications: MVP products moving to managed cloud databases after initial validation.
+
+\end{enumerate}
+
+\subsection{Validation, Configuration, and Security}
+
+\begin{enumerate}
+\item Pydantic v2: Pydantic enforces payload validation and typed response contracts at the API boundary.
+Real-life usage: strict input/output validation reduces production bugs and integration mismatches across teams. Example applications: public APIs requiring stable contracts for multiple client applications.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item python-dotenv and environment-based config: runtime values (DB URL, token settings, provider keys) are loaded from environment variables to separate code from secrets.
+Real-life usage: secure configuration management across dev, staging, and production. Example applications: any cloud-deployed app requiring environment-specific behavior.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Token-based authentication with hashed storage: bearer tokens are issued to users and persisted as hashes with expiry/revocation checks.
+Real-life usage: session management for SPA/mobile + API systems where stateless access control and revocation are required. Example applications: account-based productivity platforms, subscription dashboards, internal admin tools.
+
+\end{enumerate}
+
+\subsection{Frontend and Experience Layer}
+
+\begin{enumerate}
+\item Streamlit: Streamlit is used for rapid delivery of a functional web UI with tabs for Today, History, Chat, and Settings.
+Real-life usage: teams use Streamlit for operational tools, analytics products, and early-stage customer-facing prototypes. Example applications: BI dashboards, model monitoring consoles, health/fitness tracker interfaces.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Requests (HTTP client): The frontend uses a centralized API client for backend communication and unified error handling.
+Real-life usage: client abstractions simplify authentication headers, retry/error behavior, and maintainability. Example applications: web and scripting clients interacting with internal or third-party APIs.
+
+\end{enumerate}
+
+\subsection{AI Integration Layer}
+
+\begin{enumerate}
+\item Multi-provider LLM connector pattern (Groq, Gemini, Mistral, Mock fallback): NutriFlow integrates LLMs for chat and parser-assist flows through a provider-factory abstraction, with deterministic fallback when external calls fail.
+Real-life usage: production systems often support multiple model providers to reduce vendor risk and improve resiliency. Example applications: support copilots, context-aware assistants, data-enrichment pipelines.
+
+\end{enumerate}
+
+\subsection{Cloud and Operations (Target Production Stack)}
+
+\begin{enumerate}
+\item AWS deployment components (VPC, EC2/Elastic Beanstalk, RDS, Security Groups, cache): the deployment design follows cloud best practices with network isolation, managed database, and optional caching for hot paths.
+Real-life usage: small teams and enterprises deploy API-based products on AWS using this exact pattern for reliability and operational control. Example applications: SaaS APIs, e-commerce services, EdTech platforms, health-tracking apps.
+
+\end{enumerate}
+
+\subsection{Technology Selection Rationale}
+
+The stack was selected using three criteria:
+
+\begin{enumerate}
+\item Speed of delivery for an end-to-end backend specialization project.
+\item Strong maintainability through typed contracts and modular service boundaries.
+\item Straightforward migration path from local development to managed cloud production.
+\end{enumerate}
+
+\section{Deployment}
+
+\subsection{Deployment Flow (AWS)}
+
+NutriFlow can be deployed on AWS using a network-isolated, managed-infrastructure approach. The flow below describes how requests and data move through the deployment architecture.
+
+\begin{enumerate}
+\item Client access:
+Users access the Streamlit frontend over HTTPS. The frontend communicates with the FastAPI backend using authenticated API calls.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item VPC setup:
+All backend infrastructure is placed inside a dedicated AWS VPC with public and private subnets. Public subnet: load balancer/reverse proxy entry point. Private subnet: application runtime and database tiers.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Security Groups:
+Security groups enforce least-privilege traffic rules. Frontend/ALB SG allows inbound HTTPS (443) from the internet. App SG allows inbound backend traffic only from frontend/ALB SG. DB SG allows inbound database port only from app SG. Cache SG allows inbound cache port only from app SG.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Application runtime (EC2 or Elastic Beanstalk):
+Option A - EC2: deploy FastAPI + Uvicorn as a systemd service on EC2 instances behind an ALB. Option B - Elastic Beanstalk (managed infra): deploy the same backend as an application environment with managed scaling, health checks, and rolling updates. Both options run the same application code and environment-variable configuration model.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Database layer (RDS):
+Move from local SQLite to Amazon RDS (PostgreSQL recommended for this architecture). RDS runs in private subnets with automated backups, patching windows, and Multi-AZ (if required).
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Cache layer:
+Add Amazon ElastiCache (Redis) for hot-read acceleration and response optimization. Typical cache targets: food alias map, frequently requested dashboard reads, and short-lived chat context fragments.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Configuration and secrets:
+Runtime configuration is injected via environment variables; secrets should be managed through AWS Secrets Manager or SSM Parameter Store.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item Observability and operations:
+Application and infrastructure logs stream to CloudWatch. Health checks are exposed via \texttt{/api/v1/health}. Alerts can be configured on error rate, latency, instance health, and DB utilization.
+
+\end{enumerate}
+
+\begin{enumerate}
+\item CI/CD and release path:
+Source push triggers build/test pipeline. Successful builds deploy to staging, then production with controlled rollout. If Elastic Beanstalk is used, deployment versions are managed per environment with rollback support.
+
+\end{enumerate}
+
+\subsection{Deployment Architecture Summary}
+
+In production, the recommended topology is: \texttt{User -> HTTPS -> Frontend -> ALB/Reverse Proxy -> FastAPI App (EC2 or Elastic Beanstalk) -> RDS (+ optional ElastiCache)}.
+
+This design preserves the current code architecture while improving security, scalability, and operational reliability.
+
+\section{Conclusion}
+
+NutriFlow demonstrates that a focused, backend-first architecture can solve a high-drop-off product problem with practical engineering trade-offs. The implemented system successfully delivers the full daily loop of natural-language meal logging, structured macro computation, dashboard feedback, history-based correction, and context-aware chat guidance. The project validates that consistency-oriented design can create meaningful user value even when nutritional estimation is approximate.
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+\item Problem-first scope improves execution quality: limiting scope to the core behavior loop (log -> understand -> act -> correct) produced a complete and reliable implementation instead of a partially built feature set.
+\item Modular monolith architecture is effective for this stage: separating API, services, schemas, and models provided maintainability and clear requirement-to-code traceability without distributed-system overhead.
+\item Deterministic parsing with transparent assumptions is practical: storing confidence and assumptions alongside parsed items improves trust and supports correction workflows.
+\item Materialized daily summaries simplify product logic: recomputing and storing day-level aggregates keeps dashboard and chat context consistent after meal mutations.
+\item Reliability is strengthened by correction paths: update/delete support and history retrieval are essential in approximate systems where user edits are expected.
+\item Resilient AI integration matters: provider abstraction with fallback behavior prevents external model failures from breaking core user workflows.
+\end{enumerate}
+
+\subsection{Practical Applications}
+
+The architecture and technology choices used in NutriFlow have direct real-world relevance across domains:
+
+\begin{enumerate}
+\item Health and fitness platforms: fast natural-language capture with interpretable feedback can improve adherence in calorie and macro tracking products.
+\item Digital coaching tools: context-aware assistance based on recent user state can support recommendations in nutrition, wellness, and habit-formation apps.
+\item EdTech and productivity systems: the same pattern of event logging + daily aggregation + assistant guidance can be reused for learning progress and task management.
+\item Enterprise operational tools: modular API/service/data layering supports rapid internal tool development while keeping migration paths open to managed infrastructure.
+\end{enumerate}
+
+These applications show that the project is not only academically complete, but also transferable to production-oriented software scenarios.
+
+\subsection{Limitations, Cost Implications, and Improvement Suggestions}
+
+Current limitations:
+
+\begin{enumerate}
+\item Nutritional precision is approximate, especially for mixed dishes and regional food diversity.
+\item Food catalog and alias coverage are finite, affecting parse quality for long-tail inputs.
+\item Chat recommendations are intentionally lightweight and not medical-grade advice.
+\item Automated test coverage and production observability are still limited for large-scale operation.
+\end{enumerate}
+
+Cost implications:
+
+\begin{enumerate}
+\item LLM usage introduces variable per-request cost and latency, especially under sustained chat/parser-assist traffic.
+\item Managed cloud components (RDS, ElastiCache, load balancing, monitoring) increase monthly operating cost compared to local/single-node setups.
+\item Scaling for concurrency (multi-instance app, managed DB tiers) requires ongoing spend and capacity planning.
+\end{enumerate}
+
+Suggestions for improvement:
+
+\begin{enumerate}
+\item Expand curated food corpus and alias normalization to reduce unknown-food fallbacks.
+\item Apply selective LLM invocation only for ambiguous inputs, with caching for repeated lookups, to control cost.
+\item Add migration tooling, automated tests, and CI gates for regression safety.
+\item Introduce richer observability (metrics, traces, SLO-based alerts) for production readiness.
+\item Add stronger auth hardening, rate limiting, and secret-management controls for internet-facing deployments.
+\item Extend analytics with weekly/monthly trends and goal-adjustment workflows for deeper user retention.
+\end{enumerate}
+
+Overall, NutriFlow achieves its primary objective: transforming nutrition tracking from a high-friction manual task into a repeatable, insight-driven daily workflow. The implementation is technically coherent, operationally extensible, and well-positioned for next-phase improvements in precision, personalization, and scale.
+
+\section{References}
+
+\begin{enumerate}
+\item FastAPI. \textit{FastAPI Documentation}. Available at: https://fastapi.tiangolo.com/.
+\end{enumerate}
+
+\begin{enumerate}
+\item FastAPI. \textit{Deployment - FastAPI}. Available at: https://fastapi.tiangolo.com/deployment/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Streamlit. \textit{Streamlit Documentation}. Available at: https://docs.streamlit.io/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Streamlit. \textit{Basic concepts of Streamlit}. Available at: https://docs.streamlit.io/get-started/fundamentals/main-concepts.
+\end{enumerate}
+
+\begin{enumerate}
+\item SQLAlchemy authors. \textit{SQLAlchemy Documentation}. Available at: https://docs.sqlalchemy.org/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Pydantic Services Inc. \textit{Pydantic Documentation}. Available at: https://docs.pydantic.dev/latest/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Alembic authors. \textit{Alembic Documentation}. Available at: https://alembic.sqlalchemy.org/.
+\end{enumerate}
+
+\begin{enumerate}
+\item SQLite. \textit{SQLite Documentation}. Available at: https://sqlite.org/docs.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item PostgreSQL Global Development Group. \textit{PostgreSQL Documentation}. Available at: https://www.postgresql.org/docs/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Fowler, M. \textit{Monolith First}. Available at: https://martinfowler.com/bliki/MonolithFirst.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item Jones, M., Bradley, J. and Sakimura, N. \textit{RFC 7519: JSON Web Token (JWT)}. Internet Engineering Task Force, 2015. Available at: https://datatracker.ietf.org/doc/html/rfc7519.
+\end{enumerate}
+
+\begin{enumerate}
+\item Amazon Web Services. \textit{What is Amazon EC2?} Available at: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item Amazon Web Services. \textit{What is Amazon VPC?} Available at: https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item Amazon Web Services. \textit{Control traffic to your AWS resources using security groups}. Available at: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item Amazon Web Services. \textit{What is Amazon Relational Database Service (Amazon RDS)?} Available at: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item Amazon Web Services. \textit{What is Amazon ElastiCache?} Available at: https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item Amazon Web Services. \textit{What is AWS Elastic Beanstalk?} Available at: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html.
+\end{enumerate}
+
+\begin{enumerate}
+\item U.S. Department of Agriculture. \textit{FoodData Central}. Available at: https://fdc.nal.usda.gov/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Burke, L. E., Wang, J. and Sevick, M. A. \textit{Self-Monitoring in Weight Loss: A Systematic Review of the Literature}. \textit{Journal of the American Dietetic Association}, 2011. Available at: https://pubmed.ncbi.nlm.nih.gov/21185970/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Peterson, N. D., Middleton, K. R., Nackers, L. M., Medina, K. E., Milsom, V. A. and Perri, M. G. \textit{Dietary Self-Monitoring and Long-Term Success with Weight Management}. \textit{Obesity}, 2014. Available at: https://pmc.ncbi.nlm.nih.gov/articles/PMC4149603/.
+\end{enumerate}
+
+\begin{enumerate}
+\item Raber, M., Liao, Y., Rara, A., Schembre, S. M., Krause, K. J., Strong, L., Daniel-MacDougall, C. and Basen-Engquist, K. \textit{A Systematic Review of the Use of Dietary Self-Monitoring in Behavioral Weight-Loss Interventions: Delivery, Intensity and Effectiveness}. \textit{Public Health Nutrition}, 2021. Available at: https://pubmed.ncbi.nlm.nih.gov/34412727/.
+\end{enumerate}
+\end{document}
+
+
+
+
+
+
+
